@@ -1,0 +1,9 @@
+streamlit
+google-cloud-texttospeech
+google-cloud-aiplatform
+vertexai
+pydub
+pillow
+pytesseract
+pdf2image
+tqdm
