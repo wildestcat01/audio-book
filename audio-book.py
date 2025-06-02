@@ -1,6 +1,6 @@
 # Author: Bilal Saifi
-# Version: 2.2
-#Notes: for more audios https://cloud.google.com/text-to-speech/docs/list-voices-and-types
+# Version: 2.3 - Streamlit Cloud Compatible
+# Notes: for more audios https://cloud.google.com/text-to-speech/docs/list-voices-and-types
 # To execute this code run: streamlit run audio-book.py
 
 import os
@@ -16,11 +16,10 @@ from google.cloud import texttospeech, aiplatform
 from vertexai.preview.generative_models import GenerativeModel
 import streamlit as st
 
-# === Google Cloud Config ===
-project_id = "staging-sparkl-me"
-location = "us-central1"
-json_path = "/Users/bilalsaifi/Documents/Androif/staging-sparkl-me-ed91303d4433.json"
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = json_path
+# === Google Cloud Config (read from secrets.toml on Streamlit Cloud) ===
+project_id = st.secrets["project_id"]
+location = st.secrets["location"]
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = st.secrets["credentials_path"]
 aiplatform.init(project=project_id, location=location)
 
 # === Utility Functions ===
@@ -56,9 +55,10 @@ def sanitize_ssml(text):
 
 def generate_teaching_script(raw_text, language_mode, prompt_override):
     model = GenerativeModel("gemini-2.5-pro-preview-05-06")
+    prompt = None
 
     if prompt_override:
-        prompt = prompt_override.replace("{content}", raw_text)
+        prompt = f"{prompt_override.strip()}\n\nContent:\n{raw_text}"
     elif language_mode == "hinglish":
         prompt = f"""
         Aap ek friendly Indian teacher hain. Niche diye gaye content ko students ke liye simple Hinglish mein explain kijiye —
@@ -166,8 +166,8 @@ with col1:
     language_mode = st.selectbox("🗣️ Language Style", ["english", "hinglish"])
     language_code = st.text_input("🌐 TTS Language Code", "en-US")
     voice_name = st.text_input("🎙️ TTS Voice Name", "en-US-Casual-K")
-    ("🎙️ Available voices: https://cloud.google.com/text-to-speech/docs/list-voices-and-types")
-    ("Default: en-US-Casual-K for English and  hi-IN-Chirp3-HD-Achird for Hinglish")
+    st.caption("🎙️ Available voices: https://cloud.google.com/text-to-speech/docs/list-voices-and-types")
+    st.caption("Default: en-US-Casual-K for English and hi-IN-Chirp3-HD-Achird for Hinglish")
 with col2:
     speaking_rate = st.slider("🚀 Speaking Rate", 0.5, 2.0, 0.95)
     use_rate = st.checkbox("🗣️ Apply Speaking Rate", value=True)
@@ -175,7 +175,7 @@ with col2:
     use_pitch = st.checkbox("🎵 Apply Pitch", value=True)
     max_bytes = st.slider("🧩 Max Bytes per Chunk", 1000, 6000, 4400)
 
-prompt_override = st.text_area("✍️ Optional: Override Gemini Prompt (use {content})", "")
+prompt_override = st.text_area("✍️ Optional: Override Gemini Prompt (use {content})", "", height=150)
 
 # === Step 1: Generate Script ===
 if uploaded_file and st.button("🧠 Generate Teaching Script"):
