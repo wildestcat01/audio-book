@@ -187,6 +187,7 @@ st.markdown(
     <div style='text-align: left;'>
         <a href="https://sparkl.me" target="_blank">
             <img src="{logo_url}" width="100"/>
+            <h1 style='font-size: 30px; padding-top: 20px;'>Sparkl EdTech</h1>
         </a>
     </div>
     """,
