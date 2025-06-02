@@ -18,7 +18,6 @@ import streamlit as st
 # === Google Cloud Config (read from secrets.toml on Streamlit Cloud) ===
 project_id = "staging-sparkl-me"
 location = "us-central1"
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = st.secrets["credentials_path"]
 aiplatform.init(project=project_id, location=location)
 
 # === Utility Functions ===
