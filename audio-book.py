@@ -1,5 +1,5 @@
 # Author: Bilal Saifi
-# Version: 2.4 - Streamlit Cloud Compatible (Tesseract fallback)
+# Version: 2.9 - Streamlit Cloud Compatible with Vision OCR
 # Notes: for more audios https://cloud.google.com/text-to-speech/docs/list-voices-and-types
 # To execute this code run: streamlit run audio-book.py
 
@@ -10,9 +10,7 @@ import tempfile
 from io import BytesIO
 from pdf2image import convert_from_path
 from PIL import Image
-import pytesseract
-from pytesseract import TesseractNotFoundError
-from google.cloud import texttospeech, aiplatform
+from google.cloud import texttospeech, vision, aiplatform
 from vertexai.preview.generative_models import GenerativeModel
 import streamlit as st
 
@@ -21,33 +19,41 @@ project_id = "staging-sparkl-me"
 location = "us-central1"
 aiplatform.init(project=project_id, location=location)
 
+
 # === Utility Functions ===
 def extract_text(path):
     try:
+        client = vision.ImageAnnotatorClient()
+        content = None
+
         if path.endswith(".pdf"):
             pages = convert_from_path(path)
             text = ""
             for i, page in enumerate(pages):
-                try:
-                    page_text = pytesseract.image_to_string(page)
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as img_file:
+                    page.save(img_file.name, format="PNG")
+                    with open(img_file.name, "rb") as f:
+                        content = f.read()
+                    image = vision.Image(content=content)
+                    response = client.text_detection(image=image)
+                    page_text = response.full_text_annotation.text
                     if len(page_text.strip()) > 20:
                         text += f"\n[Page {i+1}]\n{page_text}"
-                except TesseractNotFoundError:
-                    st.error("❌ Tesseract is not installed. Image/PDF OCR will not work on this deployment.")
-                    return ""
             return text
+
         elif path.endswith((".jpg", ".png", ".jpeg")):
-            try:
-                img = Image.open(path)
-                return pytesseract.image_to_string(img)
-            except TesseractNotFoundError:
-                st.error("❌ Tesseract is not installed. Image OCR not available.")
-                return ""
+            with open(path, "rb") as image_file:
+                content = image_file.read()
+            image = vision.Image(content=content)
+            response = client.text_detection(image=image)
+            return response.full_text_annotation.text
+
         elif path.endswith(".txt"):
             with open(path, "r") as f:
                 return f.read()
+
     except Exception as e:
-        st.error(f"❌ Failed to extract text: {e}")
+        st.error(f"❌ OCR failed: {e}")
     return ""
 
 def clean_text(text):
