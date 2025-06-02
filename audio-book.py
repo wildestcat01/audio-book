@@ -184,9 +184,9 @@ def generate_audio_chunks(script, voice_name, language_code, speaking_rate, pitc
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
 st.markdown(
     f"""
-    <div style='text-align: center;'>
+    <div style='text-align: left;'>
         <a href="https://sparkl.me" target="_blank">
-            <img src="{logo_url}" width="200"/>
+            <img src="{logo_url}" width="100"/>
         </a>
     </div>
     """,
