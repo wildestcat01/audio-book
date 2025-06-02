@@ -1,5 +1,5 @@
 # Author: Bilal Saifi
-# Version: 2.3 - Streamlit Cloud Compatible
+# Version: 2.5 - Streamlit Cloud Compatible (No pydub)
 # Notes: for more audios https://cloud.google.com/text-to-speech/docs/list-voices-and-types
 # To execute this code run: streamlit run audio-book.py
 
@@ -11,7 +11,6 @@ from io import BytesIO
 from pdf2image import convert_from_path
 from PIL import Image
 import pytesseract
-from pydub import AudioSegment
 from google.cloud import texttospeech, aiplatform
 from vertexai.preview.generative_models import GenerativeModel
 import streamlit as st
@@ -111,7 +110,7 @@ def generate_audio_chunks(script, voice_name, language_code, speaking_rate, pitc
     client = texttospeech.TextToSpeechClient()
     supports_ssml = not any(x in voice_name.lower() for x in ["chirp", "neural2", "hd", "casual"])
     chunks = split_by_bytes(script, max_bytes=max_bytes)
-    final_audio = AudioSegment.empty()
+    audio_chunks = []
 
     for i, chunk in enumerate(chunks):
         plain_text = re.sub(r"<[^>]+>", "", chunk)
@@ -144,14 +143,15 @@ def generate_audio_chunks(script, voice_name, language_code, speaking_rate, pitc
                 voice=voice,
                 audio_config=audio_config,
             )
-            audio_segment = AudioSegment.from_file(BytesIO(response.audio_content), format="mp3")
-            final_audio += audio_segment
+            audio_chunks.append(response.audio_content)
         except Exception as e:
             st.warning(f"Chunk {i+1} failed: {e}")
 
-    if len(final_audio) > 0:
+    if audio_chunks:
         temp_mp3 = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
-        final_audio.export(temp_mp3.name, format="mp3")
+        with open(temp_mp3.name, "wb") as f:
+            for chunk in audio_chunks:
+                f.write(chunk)
         return temp_mp3.name
     return None
 
