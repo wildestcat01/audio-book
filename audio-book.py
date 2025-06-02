@@ -183,14 +183,12 @@ def generate_audio_chunks(script, voice_name, language_code, speaking_rate, pitc
 # === Streamlit UI ===
 # === Streamlit UI ===
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
-
-# --- Header with Logo & Brand ---
 st.markdown(
     f"""
-    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+    <div style="display: flex; align-items: center;">
         <img src="{logo_url}" alt="Logo" width="80" style="margin-right: 15px;">
-        <h1 style="margin: 0; font-size: 32px;">
-            <a href="https://sparkl.me" target="_blank" style="text-decoration: none; color: #262730;">
+        <h1 style="margin: 0; font-size: 28px;">
+            <a href="https://sparkl.me" target="_blank" style="text-decoration: none; color: inherit;">
                 Sparkl Edventure
             </a>
         </h1>
@@ -198,52 +196,28 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+st.title("🎙️ AI-Powered Audiobook Generator")
 
-# --- Title & Description ---
-st.markdown("## 🎙️ AI-Powered Audiobook Generator")
-st.markdown("Transform PDFs, images, and text into spoken content with teaching-friendly scripts and natural voiceovers.")
-
-st.markdown("---")
-
-# --- File Upload ---
-st.markdown("### 📂 Upload Your Content")
-uploaded_file = st.file_uploader("Choose a file (PDF, Image, or Text)", type=["pdf", "png", "jpg", "jpeg", "txt"])
-
-st.markdown("---")
-
-# --- TTS Configuration ---
-st.markdown("### 🎛️ Audio Generation Settings")
+uploaded_file = st.file_uploader("📂 Upload PDF, Image, or Text File", type=["pdf", "png", "jpg", "jpeg", "txt"])
 
 col1, col2 = st.columns(2)
 with col1:
     language_mode = st.selectbox("🗣️ Language Style", ["english", "hinglish"])
-    language_code = st.text_input("🌐 Language Code", "en-US")
-    voice_name = st.text_input("🎤 Voice Name", "en-US-Casual-K")
-    st.caption("🔗 [View Voice Options](https://cloud.google.com/text-to-speech/docs/list-voices-and-types)")
-    st.caption("Default: en-US-Casual-K for English, hi-IN-Chirp3-HD-Achird for Hinglish")
-
+    language_code = st.text_input("🌐 TTS Language Code", "en-US")
+    voice_name = st.text_input("🎙️ TTS Voice Name", "en-US-Casual-K")
+    st.caption("🎙️ Available voices: https://cloud.google.com/text-to-speech/docs/list-voices-and-types")
+    st.caption("Default: en-US-Casual-K for English and hi-IN-Chirp3-HD-Achird for Hinglish")
 with col2:
     speaking_rate = st.slider("🚀 Speaking Rate", 0.5, 2.0, 0.95)
-    use_rate = st.checkbox("✔️ Apply Speaking Rate", value=True)
+    use_rate = st.checkbox("🗣️ Apply Speaking Rate", value=True)
     pitch = st.slider("🎚️ Pitch", -20.0, 20.0, -2.0)
-    use_pitch = st.checkbox("✔️ Apply Pitch", value=True)
+    use_pitch = st.checkbox("🎵 Apply Pitch", value=True)
     max_bytes = st.slider("🧩 Max Bytes per Chunk", 1000, 6000, 4400)
 
-st.markdown("---")
-
-# --- Prompt Customization ---
-st.markdown("### ✍️ Customize Gemini Prompt (Optional)")
-prompt_override = st.text_area(
-    "Override the teaching prompt. Use `{content}` where the extracted content should be placed.",
-    "",
-    height=150
-)
-
-st.markdown("---")
+prompt_override = st.text_area("✍️ Optional: Override Gemini Prompt (use {content})", "", height=150)
 
 # === Step 1: Generate Script ===
-st.markdown("### 🧠 Step 1: Generate Teaching Script")
-if uploaded_file and st.button("🪄 Generate Teaching Script"):
+if uploaded_file and st.button("🧠 Generate Teaching Script"):
     suffix = uploaded_file.name.split(".")[-1]
     with tempfile.NamedTemporaryFile(delete=False, suffix="." + suffix) as tmp_file:
         tmp_file.write(uploaded_file.read())
@@ -262,29 +236,22 @@ if uploaded_file and st.button("🪄 Generate Teaching Script"):
                 st.session_state.generated_script = script
                 st.success("✅ Script generated successfully!")
 
-# === Step 2: Edit Script ===
+# === Step 2: Display & Edit Script ===
 if "generated_script" in st.session_state:
-    st.markdown("### ✏️ Step 2: Edit the Teaching Script")
-    edited_script = st.text_area(
-        "You can tweak the script below before generating audio:",
-        st.session_state.generated_script,
-        height=350
-    )
+    edited_script = st.text_area("📄 Edit Teaching Script (before audio)", st.session_state.generated_script, height=350)
     st.session_state.edited_script = edited_script
 
 # === Step 3: Generate Audio ===
-if "edited_script" in st.session_state:
-    st.markdown("### 🔊 Step 3: Generate Audiobook")
-    if st.button("🎧 Generate Audio"):
-        with st.spinner("🛠️ Synthesizing audio..."):
-            audio_path = generate_audio_chunks(
-                st.session_state.edited_script,
-                voice_name, language_code, speaking_rate, pitch, max_bytes,
-                use_rate, use_pitch
-            )
-            if audio_path:
-                with open(audio_path, "rb") as f:
-                    st.audio(f.read(), format="audio/mp3")
-                    st.download_button("⬇️ Download Audiobook", f, file_name="audiobook.mp3")
-            else:
-                st.error("❌ Audio generation failed.")
+if "edited_script" in st.session_state and st.button("🔊 Generate Audiobook"):
+    with st.spinner("🎧 Synthesizing audio..."):
+        audio_path = generate_audio_chunks(
+            st.session_state.edited_script,
+            voice_name, language_code, speaking_rate, pitch, max_bytes,
+            use_rate, use_pitch
+        )
+        if audio_path:
+            with open(audio_path, "rb") as f:
+                st.audio(f.read(), format="audio/mp3")
+                st.download_button("⬇️ Download Audiobook", f, file_name="audiobook.mp3")
+        else:
+            st.error("❌ Audio generation failed.")
