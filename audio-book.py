@@ -184,16 +184,17 @@ def generate_audio_chunks(script, voice_name, language_code, speaking_rate, pitc
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
 st.markdown(
     f"""
-    <div style='text-align: left;'>
-        <a href="https://sparkl.me" target="_blank">
-            <img src="{logo_url}" width="100"/>
-            <h1 style='font-size: 30px; padding-top: 20px;'>Sparkl EdTech</h1>
-        </a>
+    <div style="display: flex; align-items: center;">
+        <img src="{logo_url}" alt="Logo" width="80" style="margin-right: 15px;">
+        <h1 style="margin: 0; font-size: 28px;">
+            <a href="https://sparkl.me" target="_blank" style="text-decoration: none; color: inherit;">
+                Sparkl Edventure
+            </a>
+        </h1>
     </div>
     """,
     unsafe_allow_html=True
 )
-
 st.title("🎙️ AI-Powered Audiobook Generator")
 
 uploaded_file = st.file_uploader("📂 Upload PDF, Image, or Text File", type=["pdf", "png", "jpg", "jpeg", "txt"])
