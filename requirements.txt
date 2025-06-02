@@ -1,6 +1,7 @@
 streamlit
 google-cloud-texttospeech
 google-cloud-aiplatform
+google-cloud-vision
 vertexai
 pydub
 pillow
