@@ -17,9 +17,8 @@ from vertexai.preview.generative_models import GenerativeModel
 import streamlit as st
 
 # === Google Cloud Config (read from secrets.toml on Streamlit Cloud) ===
-project_id = st.secrets["project_id"]
-location = st.secrets["location"]
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = st.secrets["credentials_path"]
+project_id = "staging-sparkl-me"
+location = "us-central1"
 aiplatform.init(project=project_id, location=location)
 
 # === Utility Functions ===
