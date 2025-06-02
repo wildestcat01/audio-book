@@ -13,7 +13,8 @@ from PIL import Image
 from google.cloud import texttospeech, aiplatform
 from vertexai.preview.generative_models import GenerativeModel
 import streamlit as st
-import google.cloud.vision_v1 as vision
+from google.cloud import vision_v1 as vision
+
 
 # === Google Cloud Config (read from secrets.toml on Streamlit Cloud) ===
 project_id = "staging-sparkl-me"
