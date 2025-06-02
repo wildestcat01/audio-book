@@ -131,7 +131,7 @@ def split_by_bytes(text, max_bytes=4400):
     return parts
 
 def generate_audio_chunks(script, voice_name, language_code, speaking_rate, pitch, max_bytes, use_rate, use_pitch):
-    client = texttospeech.TextToSpeechClient()
+    client = texttospeech.TextToSpeechClient(credentials=credentials)
     supports_ssml = not any(x in voice_name.lower() for x in ["chirp", "neural2", "hd", "casual"])
     chunks = split_by_bytes(script, max_bytes=max_bytes)
     audio_chunks = []
