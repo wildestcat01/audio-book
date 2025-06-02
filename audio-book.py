@@ -10,9 +10,10 @@ import tempfile
 from io import BytesIO
 from pdf2image import convert_from_path
 from PIL import Image
-from google.cloud import texttospeech, vision, aiplatform
+from google.cloud import texttospeech, aiplatform
 from vertexai.preview.generative_models import GenerativeModel
 import streamlit as st
+import google.cloud.vision_v1 as vision
 
 # === Google Cloud Config (read from secrets.toml on Streamlit Cloud) ===
 project_id = "staging-sparkl-me"
