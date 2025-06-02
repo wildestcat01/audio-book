@@ -18,6 +18,7 @@ import streamlit as st
 # Fix for vision import
 from google.cloud import vision
 from google.oauth2 import service_account
+logo_url = "https://nostmbdijzudpxxqmcxc.supabase.co/storage/v1/object/public/profile//logo.png"
 
 # === Google Cloud Config (read from secrets.toml on Streamlit Cloud) ===
 gcp_credentials = json.loads(st.secrets["gcp_service_account"])
@@ -181,7 +182,17 @@ def generate_audio_chunks(script, voice_name, language_code, speaking_rate, pitc
 
 # === Streamlit UI ===
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
-st.image("https://nostmbdijzudpxxqmcxc.supabase.co/storage/v1/object/public/profile//logo.png")
+st.markdown(
+    f"""
+    <div style='text-align: center;'>
+        <a href="https://sparkl.me" target="_blank">
+            <img src="{logo_url}" width="200"/>
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("🎙️ AI-Powered Audiobook Generator")
 
 uploaded_file = st.file_uploader("📂 Upload PDF, Image, or Text File", type=["pdf", "png", "jpg", "jpeg", "txt"])
