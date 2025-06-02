@@ -1,5 +1,5 @@
 # Author: Bilal Saifi
-# Version: 2.5 - Streamlit Cloud Compatible (No pydub)
+# Version: 2.4 - Streamlit Cloud Compatible (Tesseract fallback)
 # Notes: for more audios https://cloud.google.com/text-to-speech/docs/list-voices-and-types
 # To execute this code run: streamlit run audio-book.py
 
@@ -11,31 +11,44 @@ from io import BytesIO
 from pdf2image import convert_from_path
 from PIL import Image
 import pytesseract
+from pytesseract import TesseractNotFoundError
 from google.cloud import texttospeech, aiplatform
 from vertexai.preview.generative_models import GenerativeModel
 import streamlit as st
 
 # === Google Cloud Config (read from secrets.toml on Streamlit Cloud) ===
-project_id = "staging-sparkl-me"
-location = "us-central1"
+project_id = st.secrets["project_id"]
+location = st.secrets["location"]
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = st.secrets["credentials_path"]
 aiplatform.init(project=project_id, location=location)
 
 # === Utility Functions ===
 def extract_text(path):
-    if path.endswith(".pdf"):
-        pages = convert_from_path(path)
-        text = ""
-        for i, page in enumerate(pages):
-            page_text = pytesseract.image_to_string(page)
-            if len(page_text.strip()) > 20:
-                text += f"\n[Page {i+1}]\n{page_text}"
-        return text
-    elif path.endswith((".jpg", ".png", ".jpeg")):
-        img = Image.open(path)
-        return pytesseract.image_to_string(img)
-    elif path.endswith(".txt"):
-        with open(path, "r") as f:
-            return f.read()
+    try:
+        if path.endswith(".pdf"):
+            pages = convert_from_path(path)
+            text = ""
+            for i, page in enumerate(pages):
+                try:
+                    page_text = pytesseract.image_to_string(page)
+                    if len(page_text.strip()) > 20:
+                        text += f"\n[Page {i+1}]\n{page_text}"
+                except TesseractNotFoundError:
+                    st.error("❌ Tesseract is not installed. Image/PDF OCR will not work on this deployment.")
+                    return ""
+            return text
+        elif path.endswith((".jpg", ".png", ".jpeg")):
+            try:
+                img = Image.open(path)
+                return pytesseract.image_to_string(img)
+            except TesseractNotFoundError:
+                st.error("❌ Tesseract is not installed. Image OCR not available.")
+                return ""
+        elif path.endswith(".txt"):
+            with open(path, "r") as f:
+                return f.read()
+    except Exception as e:
+        st.error(f"❌ Failed to extract text: {e}")
     return ""
 
 def clean_text(text):
