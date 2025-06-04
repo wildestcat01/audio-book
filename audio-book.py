@@ -85,7 +85,7 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         prompt = f"{prompt_override.strip()}\n\nContent:\n{raw_text}"
     elif language_mode == "hinglish":
         prompt = f"""
-        Aap ek friendly Indian teacher hain. Niche diye gaye content ko students ke liye simple Hinglish mein explain kijiye —
+        Aap ek friendly Indian teacher hain jo Jee Mains and jee advance and neet ki preparation karna me sabse bhadiya teacher hai puri duniya k. Niche diye gaye content ko students ke liye simple Hinglish mein explain kijiye —
         Hindi aur English ka mix use karke.
 
         ✅ Jargon avoid kijiye, lekin technical terms English mein rakhiye
@@ -94,15 +94,17 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         ✅ Avoid unsupported SSML tags.
         ✅ Use SSML tags if supported (<speak>, <break>, <prosody>, etc.) and do not use '*'
         ✅ Voice narration ke liye suitable script likhiye
+        - explaination ko simple and short rakhne ki koshish kijiye
 
         Content:
         {raw_text}
         """
     else:
         prompt = f"""
-        You are an audiobook narrator and teacher. Summarize and explain the following educational content in an easy, short, student-friendly script.
+        You are an audiobook narrator and teacher who is world best teacher in helping student prepare for Jee & Neet Exams. Summarize and explain the following educational content in an easy, short, student-friendly script.
 
         ✅ Make it sound natural and teacher-like.
+        - Keet the Explaination short and simple.
         ✅ Use SSML tags if supported (<speak>, <break>, <prosody>, etc.)
         ✅ Avoid unsupported SSML tags.
 
