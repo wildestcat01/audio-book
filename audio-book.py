@@ -1,5 +1,5 @@
 # Author: Bilal Saifi
-# Version: 4.5 - Streamlit Cloud Compatible with Vision OCR & Conversation Mode
+# Version: 5.0- Streamlit Cloud Compatible, pydub-free, with Conversation Mode
 # To execute: streamlit run audio-book.py
 
 import os
@@ -14,7 +14,6 @@ from google.cloud import texttospeech, aiplatform
 from vertexai.preview.generative_models import GenerativeModel
 import streamlit as st
 
-# Fix for vision import
 from google.cloud import vision
 from google.oauth2 import service_account
 
@@ -117,7 +116,7 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         prompt = f"""
         Simulate a conversation between a teacher and a curious student in Hinglish (mix of Hindi and English).
         The teacher explains the topic clearly, and the student occasionally asks questions.
-        The teacher answers them politely and ask questions in between to check the student's understanding. which will be reverted by student in a very short and crisp manner.
+        The teacher answers them politely and ask questions in between to check the student's understanding which will be reverted by student in a very short and crisp manner.
         Student should address the teacher as "Teacher" and student as "bilal"
         Format:
         TEACHER: explanation
@@ -127,8 +126,7 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         STUDENT: answer
 
         ✅ Make it sound natural and teacher-like.
-        ✅ do not use "*" in the script.
-        Also while creating the script, use natural words to make it sound more natural and relatable. And also words which is to be spoken in Hindi should be written in a way so that it can be pronounced properly while speaking in hindi.
+        ✅ Avoid unsupported SSML tags and do not use '*' in the script.
 
         Content:
         {raw_text}
@@ -137,8 +135,8 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         prompt = f"""
         Simulate a conversation between a teacher and a curious student in English.
         The teacher explains the topic clearly, and the student occasionally asks questions. 
-        The teacher answers them politely and ask questions in between to check the student's understanding. which will be reverted by student in a very short and crisp manner.
-        The student should address the teacher as "Teacher" and teacher should address the student as "Student".
+        The teacher answers them politely and ask questions in between to check the student's understanding which will be reverted by student in a very short and crisp manner.
+        Student should address the teacher as "Teacher"
         Format:
         TEACHER: explanation
         STUDENT: question
@@ -147,7 +145,7 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         STUDENT: answer
 
         ✅ Make it sound natural and teacher-like.
-        ✅ Avoid unsupported SSML tags and do not use "*"
+        ✅ Avoid unsupported SSML tags and do not use '*' in the script.
 
         Content:
         {raw_text}
@@ -159,59 +157,55 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         st.error(f"Gemini Error: {e}")
         return ""
 
-def generate_audio_chunks(script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, use_rate, use_pitch):
+def generate_conversational_audio(script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, use_rate, use_pitch):
     client = texttospeech.TextToSpeechClient(credentials=credentials)
-    audio_segments = []
+    audio_chunks = []
     current_speaker = None
-    current_buffer = []
+    buffer = []
+
+    def flush():
+        nonlocal buffer, current_speaker
+        if buffer and current_speaker:
+            combined_text = " ".join(buffer).strip()
+            if not combined_text or any(x in combined_text for x in ["*", "!"]):
+                return
+            voice_name = teacher_voice if current_speaker == "teacher" else student_voice
+            plain_text = re.sub(r"<[^>]+>", "", combined_text)
+            input_text = texttospeech.SynthesisInput(text=plain_text)
+            voice = texttospeech.VoiceSelectionParams(language_code=language_code, name=voice_name)
+            config = {"audio_encoding": texttospeech.AudioEncoding.MP3}
+            if use_rate: config["speaking_rate"] = speaking_rate
+            if use_pitch: config["pitch"] = pitch
+            audio_config = texttospeech.AudioConfig(**config)
+            try:
+                response = client.synthesize_speech(input=input_text, voice=voice, audio_config=audio_config)
+                audio_chunks.append(response.audio_content)
+            except Exception as e:
+                st.warning(f"Line failed: {e}")
+        buffer = []
 
     for line in script_lines:
         line = line.strip()
-        if not line or "*" in line or "!" in line:
+        if not line or line.startswith("#"):
             continue
         if line.lower().startswith("teacher:"):
-            if current_speaker and current_buffer:
-                audio_segments.append((current_speaker, " ".join(current_buffer)))
-                current_buffer = []
+            flush()
             current_speaker = "teacher"
-            current_buffer.append(line.split(":", 1)[1].strip())
+            buffer.append(line.split(":", 1)[1])
         elif line.lower().startswith("student:"):
-            if current_speaker and current_buffer:
-                audio_segments.append((current_speaker, " ".join(current_buffer)))
-                current_buffer = []
+            flush()
             current_speaker = "student"
-            current_buffer.append(line.split(":", 1)[1].strip())
+            buffer.append(line.split(":", 1)[1])
         else:
-            current_buffer.append(line)
+            buffer.append(line)
+    flush()
 
-    if current_speaker and current_buffer:
-        audio_segments.append((current_speaker, " ".join(current_buffer)))
-
-    mp3_chunks = []
-    for speaker, text in audio_segments:
-        voice_name = teacher_voice if speaker == "teacher" else student_voice
-        input_text = texttospeech.SynthesisInput(text=text)
-        voice = texttospeech.VoiceSelectionParams(language_code=language_code, name=voice_name)
-
-        config_args = {"audio_encoding": texttospeech.AudioEncoding.MP3}
-        if use_rate:
-            config_args["speaking_rate"] = speaking_rate
-        if use_pitch:
-            config_args["pitch"] = pitch
-        audio_config = texttospeech.AudioConfig(**config_args)
-
-        try:
-            response = client.synthesize_speech(input=input_text, voice=voice, audio_config=audio_config)
-            mp3_chunks.append(response.audio_content)
-        except Exception as e:
-            st.warning(f"Block failed: {e}")
-
-    if mp3_chunks:
-        final_audio_path = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3").name
-        with open(final_audio_path, "wb") as f:
-            for chunk in mp3_chunks:
+    if audio_chunks:
+        temp_mp3 = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+        with open(temp_mp3.name, "wb") as f:
+            for chunk in audio_chunks:
                 f.write(chunk)
-        return final_audio_path
+        return temp_mp3.name
     return None
 # === Streamlit UI ===
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
