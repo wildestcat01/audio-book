@@ -163,7 +163,7 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
 
 def generate_audio_chunks(script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, use_rate, use_pitch):
     client = texttospeech.TextToSpeechClient(credentials=credentials)
-    final_audio = AudioSegment.empty()
+    audio_segments = []
     current_speaker = None
     current_buffer = []
 
@@ -173,13 +173,13 @@ def generate_audio_chunks(script_lines, teacher_voice, student_voice, language_c
             continue
         if line.lower().startswith("teacher:"):
             if current_speaker and current_buffer:
-                final_audio += synthesize_block(current_speaker, " ".join(current_buffer), client, teacher_voice, student_voice, language_code, speaking_rate, pitch, use_rate, use_pitch)
+                audio_segments.append((current_speaker, " ".join(current_buffer)))
                 current_buffer = []
             current_speaker = "teacher"
             current_buffer.append(line.split(":", 1)[1].strip())
         elif line.lower().startswith("student:"):
             if current_speaker and current_buffer:
-                final_audio += synthesize_block(current_speaker, " ".join(current_buffer), client, teacher_voice, student_voice, language_code, speaking_rate, pitch, use_rate, use_pitch)
+                audio_segments.append((current_speaker, " ".join(current_buffer)))
                 current_buffer = []
             current_speaker = "student"
             current_buffer.append(line.split(":", 1)[1].strip())
@@ -187,46 +187,34 @@ def generate_audio_chunks(script_lines, teacher_voice, student_voice, language_c
             current_buffer.append(line)
 
     if current_speaker and current_buffer:
-        final_audio += synthesize_block(current_speaker, " ".join(current_buffer), client, teacher_voice, student_voice, language_code, speaking_rate, pitch, use_rate, use_pitch)
+        audio_segments.append((current_speaker, " ".join(current_buffer)))
 
-    if len(final_audio) > 0:
-        temp_mp3 = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
-        final_audio.export(temp_mp3.name, format="mp3")
-        return temp_mp3.name
+    mp3_chunks = []
+    for speaker, text in audio_segments:
+        voice_name = teacher_voice if speaker == "teacher" else student_voice
+        input_text = texttospeech.SynthesisInput(text=text)
+        voice = texttospeech.VoiceSelectionParams(language_code=language_code, name=voice_name)
+
+        config_args = {"audio_encoding": texttospeech.AudioEncoding.MP3}
+        if use_rate:
+            config_args["speaking_rate"] = speaking_rate
+        if use_pitch:
+            config_args["pitch"] = pitch
+        audio_config = texttospeech.AudioConfig(**config_args)
+
+        try:
+            response = client.synthesize_speech(input=input_text, voice=voice, audio_config=audio_config)
+            mp3_chunks.append(response.audio_content)
+        except Exception as e:
+            st.warning(f"Block failed: {e}")
+
+    if mp3_chunks:
+        final_audio_path = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3").name
+        with open(final_audio_path, "wb") as f:
+            for chunk in mp3_chunks:
+                f.write(chunk)
+        return final_audio_path
     return None
-
-def synthesize_block(speaker, text, client, teacher_voice, student_voice, language_code, speaking_rate, pitch, use_rate, use_pitch):
-    if not text.strip():
-        return AudioSegment.silent(duration=0)
-
-    voice_name = teacher_voice if speaker == "teacher" else student_voice
-    plain_text = re.sub(r"<[^>]+>", "", text)
-    input_text = texttospeech.SynthesisInput(text=plain_text)
-
-    voice = texttospeech.VoiceSelectionParams(
-        language_code=language_code,
-        name=voice_name
-    )
-
-    config_args = {"audio_encoding": texttospeech.AudioEncoding.MP3}
-    if use_rate:
-        config_args["speaking_rate"] = speaking_rate
-    if use_pitch:
-        config_args["pitch"] = pitch
-
-    audio_config = texttospeech.AudioConfig(**config_args)
-
-    try:
-        response = client.synthesize_speech(
-            input=input_text,
-            voice=voice,
-            audio_config=audio_config,
-        )
-        return AudioSegment.from_file(BytesIO(response.audio_content), format="mp3")
-    except Exception as e:
-        st.warning(f"Block failed: {e}")
-        return AudioSegment.silent(duration=0)
-
 # === Streamlit UI ===
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
 st.markdown(
