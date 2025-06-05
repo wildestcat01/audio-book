@@ -127,7 +127,7 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         STUDENT: answer
 
         ✅ Make it sound natural and teacher-like.
-        ✅ Avoid unsupported SSML tags and do not use "*" in the script.
+        ✅ do not use "*" in the script.
         Also while creating the script, use natural words to make it sound more natural and relatable. And also words which is to be spoken in Hindi should be written in a way so that it can be pronounced properly while speaking in hindi.
 
         Content:
@@ -147,8 +147,7 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         STUDENT: answer
 
         ✅ Make it sound natural and teacher-like.
-        ✅ Use SSML tags if supported (<speak>, <break>, <prosody>, etc.)
-        ✅ Avoid unsupported SSML tags and "*"
+        ✅ Avoid unsupported SSML tags and do not use "*"
 
         Content:
         {raw_text}
