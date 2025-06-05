@@ -1,5 +1,5 @@
 # Author: Bilal Saifi
-# Version: 5.0- Streamlit Cloud Compatible, pydub-free, with Conversation Mode
+# Version: 3.4 - Streamlit Cloud Compatible, pydub-free, with Conversation Mode
 # To execute: streamlit run audio-book.py
 
 import os
@@ -116,8 +116,8 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         prompt = f"""
         Simulate a conversation between a teacher and a curious student in Hinglish (mix of Hindi and English).
         The teacher explains the topic clearly, and the student occasionally asks questions.
-        The teacher answers them politely and ask questions in between to check the student's understanding which will be reverted by student in a very short and crisp manner.
-        Student should address the teacher as "Teacher" and student as "bilal"
+        The teacher answers them politely and ask questions in between to check the student's understanding.
+
         Format:
         TEACHER: explanation
         STUDENT: question
@@ -135,8 +135,8 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         prompt = f"""
         Simulate a conversation between a teacher and a curious student in English.
         The teacher explains the topic clearly, and the student occasionally asks questions. 
-        The teacher answers them politely and ask questions in between to check the student's understanding which will be reverted by student in a very short and crisp manner.
-        Student should address the teacher as "Teacher"
+        The teacher answers them politely and ask questions in between to check the student's understanding.
+
         Format:
         TEACHER: explanation
         STUDENT: question
@@ -207,6 +207,7 @@ def generate_conversational_audio(script_lines, teacher_voice, student_voice, la
                 f.write(chunk)
         return temp_mp3.name
     return None
+
 # === Streamlit UI ===
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
 st.markdown(
@@ -222,7 +223,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 st.title("🎙️ AI-Powered Audiobook Generator")
 
 uploaded_file = st.file_uploader("📂 Upload PDF, Image, or Text File", type=["pdf", "png", "jpg", "jpeg", "txt"])
@@ -233,17 +233,13 @@ col1, col2 = st.columns(2)
 with col1:
     language_mode = st.selectbox("🗣️ Language Style", ["english", "hinglish"])
     language_code = st.text_input("🌐 TTS Language Code", "en-US")
-    if conversation_mode:
-        teacher_voice = st.text_input("👨‍🏫 Teacher Voice Name", "en-US-Casual-K")
-        student_voice = st.text_input("🧑‍🎓 Student Voice Name", "en-US-Standard-F")
-    else:
-        voice_name = st.text_input("🎙️ TTS Voice Name", "en-US-Casual-K")
+    teacher_voice = st.text_input("👨‍🏫 Teacher Voice Name", "en-US-Casual-K")
+    student_voice = st.text_input("🧑‍🎓 Student Voice Name", "en-US-Standard-F")
 with col2:
     speaking_rate = st.slider("🚀 Speaking Rate", 0.5, 2.0, 0.95)
     use_rate = st.checkbox("🗣️ Apply Speaking Rate", value=True)
     pitch = st.slider("🎚️ Pitch", -20.0, 20.0, -2.0)
     use_pitch = st.checkbox("🎵 Apply Pitch", value=True)
-    max_bytes = st.slider("🧩 Max Bytes per Chunk", 1000, 6000, 4400)
 
 prompt_override = st.text_area("✍️ Optional: Override Gemini Prompt (use {content})", "", height=150)
 
@@ -275,16 +271,11 @@ if "generated_script" in st.session_state:
 
 if "edited_script" in st.session_state and st.button("🔊 Generate Audiobook"):
     with st.spinner("🎧 Synthesizing audio..."):
-        if conversation_mode:
-            script_lines = [line.strip() for line in st.session_state.edited_script.splitlines() if line.strip() and ":" in line]
-            audio_path = generate_audio_chunks(
-                script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, use_rate, use_pitch
-            )
-        else:
-            audio_path = generate_audio_chunks(
-                split_by_bytes(st.session_state.edited_script, max_bytes), voice_name, voice_name, language_code, speaking_rate, pitch, use_rate, use_pitch
-            )
-
+        script_lines = [line.strip() for line in st.session_state.edited_script.splitlines() if line.strip()]
+        audio_path = generate_conversational_audio(
+            script_lines, teacher_voice, student_voice, language_code,
+            speaking_rate, pitch, use_rate, use_pitch
+        )
         if audio_path:
             with open(audio_path, "rb") as f:
                 st.audio(f.read(), format="audio/mp3")
