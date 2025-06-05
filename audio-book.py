@@ -1,5 +1,5 @@
 # Author: Bilal Saifi
-# Version: 4.2 - Streamlit Cloud Compatible with Vision OCR & Conversation Mode
+# Version: 4.5 - Streamlit Cloud Compatible with Vision OCR & Conversation Mode
 # To execute: streamlit run audio-book.py
 
 import os
@@ -13,7 +13,6 @@ from PIL import Image
 from google.cloud import texttospeech, aiplatform
 from vertexai.preview.generative_models import GenerativeModel
 import streamlit as st
-from pydub import AudioSegment
 
 # Fix for vision import
 from google.cloud import vision
