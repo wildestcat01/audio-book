@@ -1,7 +1,6 @@
 # Author: Bilal Saifi
-# Version: 2.5 - Streamlit Cloud Compatible with Vision OCR
-# Notes: for more audios https://cloud.google.com/text-to-speech/docs/list-voices-and-types
-# To execute this code run: streamlit run audio-book.py
+# Version: 4.2 - Streamlit Cloud Compatible with Vision OCR & Conversation Mode
+# To execute: streamlit run audio-book.py
 
 import os
 import re
@@ -14,16 +13,17 @@ from PIL import Image
 from google.cloud import texttospeech, aiplatform
 from vertexai.preview.generative_models import GenerativeModel
 import streamlit as st
+from pydub import AudioSegment
 
 # Fix for vision import
 from google.cloud import vision
 from google.oauth2 import service_account
+
 logo_url = "https://nostmbdijzudpxxqmcxc.supabase.co/storage/v1/object/public/profile//logo.png"
 
-# === Google Cloud Config (read from secrets.toml on Streamlit Cloud) ===
+# === Google Cloud Config ===
 gcp_credentials = json.loads(st.secrets["gcp_service_account"])
 credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
-
 project_id = gcp_credentials["project_id"]
 location = "us-central1"
 aiplatform.init(project=project_id, location=location, credentials=credentials)
@@ -32,8 +32,6 @@ aiplatform.init(project=project_id, location=location, credentials=credentials)
 def extract_text(path):
     try:
         client = vision.ImageAnnotatorClient(credentials=credentials)
-        content = None
-
         if path.endswith(".pdf"):
             pages = convert_from_path(path)
             text = ""
@@ -48,25 +46,22 @@ def extract_text(path):
                     if len(page_text.strip()) > 20:
                         text += f"\n[Page {i+1}]\n{page_text}"
             return text
-
         elif path.endswith((".jpg", ".png", ".jpeg")):
             with open(path, "rb") as image_file:
                 content = image_file.read()
             image = vision.Image(content=content)
             response = client.text_detection(image=image)
             return response.full_text_annotation.text
-
         elif path.endswith(".txt"):
             with open(path, "r") as f:
                 return f.read()
-
     except Exception as e:
         st.error(f"❌ OCR failed: {e}")
     return ""
 
 def clean_text(text):
     text = re.sub(r"\[Page \d+\]", "", text)
-    text = re.sub(r"[_*~`]", "", text)
+    text = re.sub(r"[_*~`!\"]", "", text)
     text = re.sub(r"\s{2,}", " ", text)
     return text.strip()
 
@@ -84,7 +79,8 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
     elif language_mode == "hinglish":
         prompt = f"""
         Aap ek friendly Indian teacher hain jo Jee Mains and advance ki preparation karna me sabse bhadiya teacher hai puri duniya k. Niche diye gaye content ko students ke liye simple Hinglish mein explain kijiye —
-        Hindi aur English ka mix use karke
+        Hindi aur English ka mix use karke.
+
         ✅ Jargon avoid kijiye, lekin technical terms English mein rakhiye
         ✅ Tone bilkul friendly aur classroom jaise ho
         ✅ Easy examples aur short sentences use kijiye
@@ -92,7 +88,6 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         ✅ Use SSML tags if supported (<speak>, <break>, <prosody>, etc.) and do not use '*'
         ✅ Voice narration ke liye suitable script likhiye
         ✅ Make it sound natural and teacher-like
-        Also while creating the script, use natural words to make it sound more natural and relatable. and also words which is to be spoken in Hindi should be written in a way so that it can be pronounced properly in hindi.
 
         Content:
         {raw_text}
@@ -108,7 +103,6 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         Content:
         {raw_text}
         """
-
     try:
         response = model.generate_content(prompt)
         return response.text.strip()
@@ -116,12 +110,11 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         st.error(f"Gemini Error: {e}")
         return ""
 
-def generate_conversation_script(raw_text, language_mode):
+def generate_conversation_script(raw_text, language_mode, prompt_override):
     model = GenerativeModel("gemini-2.5-pro-preview-05-06")
     if prompt_override:
         prompt = f"{prompt_override.strip()}\n\nContent:\n{raw_text}"
     elif language_mode == "hinglish":
-    #if language_mode == "hinglish":
         prompt = f"""
         Simulate a conversation between a teacher and a curious student in Hinglish (mix of Hindi and English).
         The teacher explains the topic clearly, and the student occasionally asks questions.
@@ -157,7 +150,6 @@ def generate_conversation_script(raw_text, language_mode):
         ✅ Make it sound natural and teacher-like.
         ✅ Use SSML tags if supported (<speak>, <break>, <prosody>, etc.)
         ✅ Avoid unsupported SSML tags and "*"
-        
 
         Content:
         {raw_text}
@@ -169,69 +161,9 @@ def generate_conversation_script(raw_text, language_mode):
         st.error(f"Gemini Error: {e}")
         return ""
 
-def split_by_bytes(text, max_bytes=4400):
-    parts, current = [], ""
-    for line in text.splitlines():
-        test = current + line + "\n"
-        if len(test.encode("utf-8")) <= max_bytes:
-            current = test
-        else:
-            if current.strip():
-                parts.append(current.strip())
-            current = line + "\n"
-    if current.strip():
-        parts.append(current.strip())
-    return parts
-
-from pydub import AudioSegment
-
-# def generate_audio_chunks(script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, max_bytes, use_rate, use_pitch):
-#     client = texttospeech.TextToSpeechClient()
-#     final_audio = AudioSegment.empty()
-
-#     for line in script_lines:
-#         if ":" not in line or not line.split(":", 1)[1].strip():
-#          continue  # Skip invalid or empty lines
-#         speaker = "teacher" if line.startswith("TEACHER:") else "student"
-#         text = line.split(":", 1)[1].strip()
-#         voice_name = teacher_voice if speaker == "teacher" else student_voice
-#         plain_text = re.sub(r"<[^>]+>", "", text)
-#         if not plain_text.strip():
-#             continue
-#         input_text = texttospeech.SynthesisInput(text=plain_text)
-
-#         voice = texttospeech.VoiceSelectionParams(
-#             language_code=language_code,
-#             name=voice_name
-#         )
-
-#         config_args = {"audio_encoding": texttospeech.AudioEncoding.MP3}
-#         if use_rate: config_args["speaking_rate"] = speaking_rate
-#         if use_pitch: config_args["pitch"] = pitch
-
-#         audio_config = texttospeech.AudioConfig(**config_args)
-
-#         try:
-#             response = client.synthesize_speech(
-#                 input=input_text,
-#                 voice=voice,
-#                 audio_config=audio_config,
-#             )
-#             audio_segment = AudioSegment.from_file(BytesIO(response.audio_content), format="mp3")
-#             final_audio += audio_segment
-#         except Exception as e:
-#             st.warning(f"Line failed: {e}")
-
-#     if len(final_audio) > 0:
-#         temp_mp3 = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
-#         final_audio.export(temp_mp3.name, format="mp3")
-#         return temp_mp3.name
-#     return None
-
-def generate_audio_chunks(script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, max_bytes, use_rate, use_pitch):
-    client = texttospeech.TextToSpeechClient()
+def generate_audio_chunks(script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, use_rate, use_pitch):
+    client = texttospeech.TextToSpeechClient(credentials=credentials)
     final_audio = AudioSegment.empty()
-
     current_speaker = None
     current_buffer = []
 
@@ -297,6 +229,20 @@ def synthesize_block(speaker, text, client, teacher_voice, student_voice, langua
 
 # === Streamlit UI ===
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
+st.markdown(
+    f"""
+    <div style="display: flex; align-items: center;">
+        <img src="{logo_url}" alt="Logo" width="80" style="margin-right: 15px;">
+        <h1 style="margin: 0; font-size: 28px;">
+            <a href="https://sparkl.me" target="_blank" style="text-decoration: none; color: inherit;">
+                Sparkl Edventure
+            </a>
+        </h1>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("🎙️ AI-Powered Audiobook Generator")
 
 uploaded_file = st.file_uploader("📂 Upload PDF, Image, or Text File", type=["pdf", "png", "jpg", "jpeg", "txt"])
@@ -312,9 +258,6 @@ with col1:
         student_voice = st.text_input("🧑‍🎓 Student Voice Name", "en-US-Standard-F")
     else:
         voice_name = st.text_input("🎙️ TTS Voice Name", "en-US-Casual-K")
-("🎙️ Available voices: https://cloud.google.com/text-to-speech/docs/list-voices-and-types")
-("Default teacher: en-US-Casual-K for English and  hi-IN-Chirp3-HD-Achird for Hinglish")
-("Default Student: sen-US-Standard-F for English and hi-IN-Chirp3-HD-Leda for Hinglish")
 with col2:
     speaking_rate = st.slider("🚀 Speaking Rate", 0.5, 2.0, 0.95)
     use_rate = st.checkbox("🗣️ Apply Speaking Rate", value=True)
@@ -337,7 +280,7 @@ if uploaded_file and st.button("🧠 Generate Teaching Script"):
         else:
             cleaned = clean_text(raw_text)
             if conversation_mode:
-                script = generate_conversation_script(cleaned, language_mode)
+                script = generate_conversation_script(cleaned, language_mode, prompt_override)
             else:
                 script = generate_teaching_script(cleaned, language_mode, prompt_override)
             if not script:
@@ -355,11 +298,11 @@ if "edited_script" in st.session_state and st.button("🔊 Generate Audiobook"):
         if conversation_mode:
             script_lines = [line.strip() for line in st.session_state.edited_script.splitlines() if line.strip() and ":" in line]
             audio_path = generate_audio_chunks(
-                script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, max_bytes, use_rate, use_pitch
+                script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, use_rate, use_pitch
             )
         else:
             audio_path = generate_audio_chunks(
-                split_by_bytes(st.session_state.edited_script), voice_name, language_code, speaking_rate, pitch, max_bytes, use_rate, use_pitch
+                split_by_bytes(st.session_state.edited_script, max_bytes), voice_name, voice_name, language_code, speaking_rate, pitch, use_rate, use_pitch
             )
 
         if audio_path:
@@ -368,4 +311,3 @@ if "edited_script" in st.session_state and st.button("🔊 Generate Audiobook"):
                 st.download_button("⬇️ Download Audiobook", f, file_name="audiobook.mp3")
         else:
             st.error("❌ Audio generation failed.")
-
