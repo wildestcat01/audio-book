@@ -299,7 +299,8 @@ def generate_audio(script, voice_name, language_code, speaking_rate, pitch, use_
             student_voice,
             language_code,
             speaking_rate,
-            pitch,
+            teacher_pitch,
+            student_pitch,
             max_bytes,
             use_rate,
             use_pitch
@@ -355,7 +356,11 @@ with col1:
 with col2:
     speaking_rate = st.slider("🚀 Speaking Rate", 0.5, 2.0, 0.95)
     use_rate = st.checkbox("🗣️ Apply Speaking Rate", value=True)
-    pitch = st.slider("🎚️ Pitch", -20.0, 20.0, -2.0)
+    if conversation_mode:
+        teacher_pitch = st.slider("🎚️ Teacher Pitch", -20.0, 20.0, -2.0)
+        student_pitch = st.slider("🎚️ Student Pitch", -20.0, 20.0, 0.0)
+    else:
+        pitch = st.slider("🎚️ Pitch", -20.0, 20.0, -2.0)
     use_pitch = st.checkbox("🎵 Apply Pitch", value=True)
     max_bytes = st.slider("🧩 Max Bytes per Chunk", 1000, 6000, 4400)
 
