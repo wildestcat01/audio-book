@@ -233,8 +233,7 @@ def synthesize_chunks(chunks, voice_name, language_code, speaking_rate, pitch, u
         return temp_mp3.name
     return None
 
-def generate_conversational_audio(script_lines, teacher_voice, student_voice, language_code, speaking_rate, teacher_pitch,
-    student_pitch, max_bytes, use_rate, use_pitch):
+def generate_conversational_audio(script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, max_bytes, use_rate, use_pitch):
     client = texttospeech.TextToSpeechClient(credentials=credentials)
     audio_chunks = []
     current_speaker = None
@@ -255,9 +254,6 @@ def generate_conversational_audio(script_lines, teacher_voice, student_voice, la
             voice = texttospeech.VoiceSelectionParams(language_code=language_code, name=voice_name)
             config = {"audio_encoding": texttospeech.AudioEncoding.MP3}
             if use_rate: config["speaking_rate"] = speaking_rate
-            pitch_value = teacher_pitch if current_speaker == "teacher" else student_pitch
-            if use_pitch:
-                config["pitch"] = pitch_value
             if use_pitch: config["pitch"] = pitch
             audio_config = texttospeech.AudioConfig(**config)
             try:
@@ -303,8 +299,7 @@ def generate_audio(script, voice_name, language_code, speaking_rate, pitch, use_
             student_voice,
             language_code,
             speaking_rate,
-            teacher_pitch,
-            student_pitch,
+            pitch,
             max_bytes,
             use_rate,
             use_pitch
@@ -324,7 +319,6 @@ def generate_audio(script, voice_name, language_code, speaking_rate, pitch, use_
 
 
 # === Streamlit UI ===
-
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
 st.markdown(
     f"""
@@ -342,9 +336,6 @@ st.markdown(
 st.title("🎙️ AI-Powered Audiobook Generator")
 
 uploaded_file = st.file_uploader("📂 Upload PDF, Image, or Text File", type=["pdf", "png", "jpg", "jpeg", "txt"])
-
-pitch = None
-
 conversation_mode = st.checkbox("🧠 Enable Conversation Mode")
 
 col1, col2 = st.columns(2)
@@ -364,11 +355,7 @@ with col1:
 with col2:
     speaking_rate = st.slider("🚀 Speaking Rate", 0.5, 2.0, 0.95)
     use_rate = st.checkbox("🗣️ Apply Speaking Rate", value=True)
-    if conversation_mode:
-        teacher_pitch = st.slider("🎚️ Teacher Pitch", -20.0, 20.0, -2.0)
-        student_pitch = st.slider("🎚️ Student Pitch", -20.0, 20.0, 0.0)
-    else:
-        pitch = st.slider("🎚️ Pitch", -20.0, 20.0, -2.0)
+    pitch = st.slider("🎚️ Pitch", -20.0, 20.0, -2.0)
     use_pitch = st.checkbox("🎵 Apply Pitch", value=True)
     max_bytes = st.slider("🧩 Max Bytes per Chunk", 1000, 6000, 4400)
 
@@ -428,4 +415,3 @@ with st.expander("📊 View Token Usage Logs"):
             st.markdown(f"- `{entry['timestamp']}` | **{entry['task']}**: {entry['tokens']} tokens")
     else:
         st.info("No token logs yet.")
-
