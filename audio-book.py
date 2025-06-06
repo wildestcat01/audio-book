@@ -333,22 +333,28 @@ if "generated_script" in st.session_state:
 
 if "edited_script" in st.session_state and st.button("🔊 Generate Audiobook"):
     with st.spinner("🎧 Synthesizing audio..."):
-        if conversation_mode:
-            script_lines = [line.strip() for line in st.session_state.edited_script.splitlines() if line.strip() and ":" in line]
-            audio_path = generate_audio_chunks(
-                script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, max_bytes, use_rate, use_pitch
-            )
-        else:
-            audio_path = generate_audio_chunks(
-                split_by_bytes(st.session_state.edited_script), voice_name, language_code, speaking_rate, pitch, max_bytes, use_rate, use_pitch
-            )
-
+        audio_path = generate_audio(
+            st.session_state.edited_script,
+            teacher_voice if conversation_mode else voice_name,
+            language_code,
+            speaking_rate,
+            pitch,
+            use_rate,
+            use_pitch
+        )
         if audio_path:
             with open(audio_path, "rb") as f:
                 st.audio(f.read(), format="audio/mp3")
                 st.download_button("⬇️ Download Audiobook", f, file_name="audiobook.mp3")
         else:
             st.error("❌ Audio generation failed.")
+
+with st.expander("📊 View Token Usage Logs"):
+    if token_logs:
+        for label, count in token_logs:
+            st.markdown(f"**{label}**: {count} tokens")
+    else:
+        st.info("No token logs yet.")
 
 
             
