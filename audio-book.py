@@ -324,6 +324,7 @@ def generate_audio(script, voice_name, language_code, speaking_rate, pitch, use_
 
 
 # === Streamlit UI ===
+
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
 st.markdown(
     f"""
@@ -341,6 +342,9 @@ st.markdown(
 st.title("🎙️ AI-Powered Audiobook Generator")
 
 uploaded_file = st.file_uploader("📂 Upload PDF, Image, or Text File", type=["pdf", "png", "jpg", "jpeg", "txt"])
+
+pitch = None
+
 conversation_mode = st.checkbox("🧠 Enable Conversation Mode")
 
 col1, col2 = st.columns(2)
