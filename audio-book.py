@@ -197,7 +197,7 @@ def synthesize_chunks(chunks, voice_name, language_code, speaking_rate, pitch, u
         return temp_mp3.name
     return None
 
-def generate_conversational_audio(script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, use_rate, use_pitch):
+def generate_conversational_audio(script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, max_bytes, use_rate, use_pitch):
     client = texttospeech.TextToSpeechClient(credentials=credentials)
     audio_chunks = []
     current_speaker = None
@@ -284,6 +284,7 @@ with col2:
     use_rate = st.checkbox("🗣️ Apply Speaking Rate", value=True)
     pitch = st.slider("🎚️ Pitch", -20.0, 20.0, -2.0)
     use_pitch = st.checkbox("🎵 Apply Pitch", value=True)
+    max_bytes = st.slider("🧩 Max Bytes per Chunk", 1000, 6000, 4400)
 
 prompt_override = st.text_area("✍️ Optional: Override Gemini Prompt (use {content})", "", height=150)
 
@@ -319,13 +320,13 @@ if "edited_script" in st.session_state and st.button("🔊 Generate Audiobook"):
             script_lines = [line.strip() for line in st.session_state.edited_script.splitlines() if line.strip()]
             audio_path = generate_conversational_audio(
                 script_lines, teacher_voice, student_voice, language_code,
-                speaking_rate, pitch, use_rate, use_pitch
+                speaking_rate, pitch, max_bytes, use_rate, use_pitch
             )
         else:
             chunks = split_by_bytes(st.session_state.edited_script)
             audio_path = synthesize_chunks(
                 chunks, voice_name, language_code,
-                speaking_rate, pitch, use_rate, use_pitch
+                speaking_rate, pitch, max_bytes, use_rate, use_pitch
             )
         if audio_path:
             with open(audio_path, "rb") as f:
