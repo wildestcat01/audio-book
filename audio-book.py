@@ -264,13 +264,7 @@ def log_tts_tokens(label, chunks):
     for chunk in chunks:
         token_logs.append((f"TTS: {label}", len(chunk.split())))
 
-# === Logs ===
-with st.expander("📊 View Token Usage Logs"):
-    if token_logs:
-        for label, count in token_logs:
-            st.markdown(f"**{label}**: {count} tokens")
-    else:
-        st.info("No token logs yet.")
+
 
 # === Streamlit UI ===
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
@@ -357,3 +351,11 @@ if "edited_script" in st.session_state and st.button("🔊 Generate Audiobook"):
                 st.download_button("⬇️ Download Audiobook", f, file_name="audiobook.mp3")
         else:
             st.error("❌ Audio generation failed.")
+            
+# === Logs ===
+with st.expander("📊 View Token Usage Logs"):
+    if token_logs:
+        for label, count in token_logs:
+            st.markdown(f"**{label}**: {count} tokens")
+    else:
+        st.info("No token logs yet.")
