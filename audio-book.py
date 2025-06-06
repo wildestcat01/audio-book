@@ -26,6 +26,13 @@ project_id = gcp_credentials["project_id"]
 location = "us-central1"
 aiplatform.init(project=project_id, location=location, credentials=credentials)
 
+# === Token Usage Logger ===
+token_logs = []
+
+def log_tokens(task, text):
+    token_count = len(text.split())
+    token_logs.append((task, token_count))
+
 # === Utility Functions ===
 def extract_text(path):
     try:
@@ -43,16 +50,21 @@ def extract_text(path):
                     page_text = response.full_text_annotation.text
                     if len(page_text.strip()) > 20:
                         text += f"\n[Page {i+1}]\n{page_text}"
+            log_tokens("Vision OCR", text)
             return text
         elif path.endswith((".jpg", ".png", ".jpeg")):
             with open(path, "rb") as image_file:
                 content = image_file.read()
             image = vision.Image(content=content)
             response = client.text_detection(image=image)
-            return response.full_text_annotation.text
+            text = response.full_text_annotation.text
+            log_tokens("Vision OCR", text)
+            return text
         elif path.endswith(".txt"):
             with open(path, "r") as f:
-                return f.read()
+                text = f.read()
+            log_tokens("Text File Read", text)
+            return text
     except Exception as e:
         st.error(f"❌ OCR failed: {e}")
     return ""
@@ -248,6 +260,17 @@ def generate_conversational_audio(script_lines, teacher_voice, student_voice, la
                 f.write(chunk)
         return temp_mp3.name
     return None
+def log_tts_tokens(label, chunks):
+    for chunk in chunks:
+        token_logs.append((f"TTS: {label}", len(chunk.split())))
+
+# === Logs ===
+with st.expander("📊 View Token Usage Logs"):
+    if token_logs:
+        for label, count in token_logs:
+            st.markdown(f"**{label}**: {count} tokens")
+    else:
+        st.info("No token logs yet.")
 
 # === Streamlit UI ===
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
