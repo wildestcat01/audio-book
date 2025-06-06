@@ -356,13 +356,3 @@ with st.expander("📊 View Token Usage Logs"):
     else:
         st.info("No token logs yet.")
 
-
-            
-# === Logs ===
-with st.expander("📊 View Token Usage Logs"):
-    if token_logs:
-        for label, count in token_logs:
-            st.markdown(f"**{label}**: {count} tokens")
-    else:
-        st.info("No token logs yet.")
-            
