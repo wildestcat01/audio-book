@@ -233,7 +233,8 @@ def synthesize_chunks(chunks, voice_name, language_code, speaking_rate, pitch, u
         return temp_mp3.name
     return None
 
-def generate_conversational_audio(script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, max_bytes, use_rate, use_pitch):
+def generate_conversational_audio(script_lines, teacher_voice, student_voice, language_code, speaking_rate, teacher_pitch,
+    student_pitch, max_bytes, use_rate, use_pitch):
     client = texttospeech.TextToSpeechClient(credentials=credentials)
     audio_chunks = []
     current_speaker = None
@@ -254,6 +255,9 @@ def generate_conversational_audio(script_lines, teacher_voice, student_voice, la
             voice = texttospeech.VoiceSelectionParams(language_code=language_code, name=voice_name)
             config = {"audio_encoding": texttospeech.AudioEncoding.MP3}
             if use_rate: config["speaking_rate"] = speaking_rate
+            pitch_value = teacher_pitch if current_speaker == "teacher" else student_pitch
+            if use_pitch:
+                config["pitch"] = pitch_value
             if use_pitch: config["pitch"] = pitch
             audio_config = texttospeech.AudioConfig(**config)
             try:
