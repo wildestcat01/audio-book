@@ -352,10 +352,3 @@ if "edited_script" in st.session_state and st.button("🔊 Generate Audiobook"):
         else:
             st.error("❌ Audio generation failed.")
             
-# === Logs ===
-with st.expander("📊 View Token Usage Logs"):
-    if token_logs:
-        for label, count in token_logs:
-            st.markdown(f"**{label}**: {count} tokens")
-    else:
-        st.info("No token logs yet.")
