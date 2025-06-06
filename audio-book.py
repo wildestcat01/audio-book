@@ -219,7 +219,7 @@ def generate_conversational_audio(script_lines, teacher_voice, student_voice, la
         nonlocal buffer, current_speaker
         if buffer and current_speaker:
             combined_text = " ".join(buffer).strip()
-            if not combined_text or any(x in combined_text for x in ["*", "!"]):
+            if not combined_text:
                 buffer = []
                 return
             voice_name = teacher_voice if current_speaker == "teacher" else student_voice
@@ -234,21 +234,18 @@ def generate_conversational_audio(script_lines, teacher_voice, student_voice, la
                 response = client.synthesize_speech(input=input_text, voice=voice, audio_config=audio_config)
                 audio_chunks.append(response.audio_content)
             except Exception as e:
-                st.warning(f"Block failed: {e}")
+                st.warning(f"Block failed ({current_speaker}): {e}")
         buffer = []
 
     for line in script_lines:
         line = line.strip()
         if not line or line.startswith("#"):
             continue
-        if line.lower().startswith("teacher:"):
+        match = re.match(r"^(teacher|student)\s*:\s*(.*)$", line, re.IGNORECASE)
+        if match:
             flush()
-            current_speaker = "teacher"
-            buffer.append(line.split(":", 1)[1])
-        elif line.lower().startswith("student:"):
-            flush()
-            current_speaker = "student"
-            buffer.append(line.split(":", 1)[1])
+            current_speaker = match.group(1).lower()
+            buffer = [match.group(2).strip()]
         else:
             buffer.append(line)
     flush()
