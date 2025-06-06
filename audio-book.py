@@ -319,6 +319,10 @@ with col1:
     else:
         voice_name = st.text_input("🎙️ TTS Voice Name", "en-US-Casual-K")
 
+    ("🎙️ Available voices: https://cloud.google.com/text-to-speech/docs/list-voices-and-types")
+    ("Default teacher: en-US-Casual-K for English and  hi-IN-Chirp3-HD-Achird ")
+    ("Default Student: sen-US-Standard-F for English and hi-IN-Chirp3-HD-Leda ")
+
 with col2:
     speaking_rate = st.slider("🚀 Speaking Rate", 0.5, 2.0, 0.95)
     use_rate = st.checkbox("🗣️ Apply Speaking Rate", value=True)
