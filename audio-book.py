@@ -264,6 +264,32 @@ def log_tts_tokens(label, chunks):
     for chunk in chunks:
         token_logs.append((f"TTS: {label}", len(chunk.split())))
 
+def generate_audio(script, voice_name, language_code, speaking_rate, pitch, use_rate, use_pitch):
+    if conversation_mode:
+        script_lines = script.splitlines()
+        return generate_conversational_audio(
+            script_lines,
+            teacher_voice,
+            student_voice,
+            language_code,
+            speaking_rate,
+            pitch,
+            max_bytes,
+            use_rate,
+            use_pitch
+        )
+    else:
+        chunks = split_by_bytes(script, max_bytes=max_bytes)
+        log_tts_tokens("chunks", chunks)
+        return synthesize_chunks(
+            chunks,
+            voice_name,
+            language_code,
+            speaking_rate,
+            pitch,
+            use_rate,
+            use_pitch
+        )
 
 
 # === Streamlit UI ===
