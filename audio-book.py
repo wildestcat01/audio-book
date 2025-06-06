@@ -1,5 +1,5 @@
 # Author: Bilal Saifi
-# Version: 3.5 - Streamlit Cloud Compatible, pydub-free, with Optional Conversation Mode
+# Version: 7.2 - Streamlit Cloud Compatible with Optional Conversation Mode and Dynamic Voice Field Visibility
 # To execute: streamlit run audio-book.py
 
 import os
@@ -208,6 +208,7 @@ def generate_conversational_audio(script_lines, teacher_voice, student_voice, la
         if buffer and current_speaker:
             combined_text = " ".join(buffer).strip()
             if not combined_text or any(x in combined_text for x in ["*", "!"]):
+                buffer = []
                 return
             voice_name = teacher_voice if current_speaker == "teacher" else student_voice
             plain_text = re.sub(r"<[^>]+>", "", combined_text)
@@ -272,8 +273,12 @@ col1, col2 = st.columns(2)
 with col1:
     language_mode = st.selectbox("🗣️ Language Style", ["english", "hinglish"])
     language_code = st.text_input("🌐 TTS Language Code", "en-US")
-    teacher_voice = st.text_input("👨‍🏫 Teacher Voice Name", "en-US-Casual-K")
-    student_voice = st.text_input("🧑‍🎓 Student Voice Name", "en-US-Standard-F")
+    if conversation_mode:
+        teacher_voice = st.text_input("👨‍🏫 Teacher Voice Name", "en-US-Casual-K")
+        student_voice = st.text_input("🧑‍🎓 Student Voice Name", "en-US-Standard-F")
+    else:
+        voice_name = st.text_input("🎙️ TTS Voice Name", "en-US-Casual-K")
+
 with col2:
     speaking_rate = st.slider("🚀 Speaking Rate", 0.5, 2.0, 0.95)
     use_rate = st.checkbox("🗣️ Apply Speaking Rate", value=True)
@@ -319,7 +324,7 @@ if "edited_script" in st.session_state and st.button("🔊 Generate Audiobook"):
         else:
             chunks = split_by_bytes(st.session_state.edited_script)
             audio_path = synthesize_chunks(
-                chunks, teacher_voice, language_code,
+                chunks, voice_name, language_code,
                 speaking_rate, pitch, use_rate, use_pitch
             )
         if audio_path:
