@@ -13,7 +13,7 @@ from PIL import Image
 from google.cloud import texttospeech, aiplatform
 from vertexai.preview.generative_models import GenerativeModel
 import streamlit as st
-
+import datetime
 from google.cloud import vision
 from google.oauth2 import service_account
 
@@ -26,12 +26,34 @@ project_id = gcp_credentials["project_id"]
 location = "us-central1"
 aiplatform.init(project=project_id, location=location, credentials=credentials)
 
+LOG_FILE = "token_usage_log.json"
 # === Token Usage Logger ===
 token_logs = []
 
 def log_tokens(task, text):
     token_count = len(text.split())
     token_logs.append((task, token_count))
+    append_token_log(task, token_count)  # persist it
+
+
+def load_token_log():
+    if os.path.exists(LOG_FILE):
+        with open(LOG_FILE, "r") as f:
+            return json.load(f)
+    return []
+
+def save_token_log(log_data):
+    with open(LOG_FILE, "w") as f:
+        json.dump(log_data, f, indent=2)
+
+def append_token_log(task, token_count):
+    log_data = load_token_log()
+    log_data.append({
+        "timestamp": datetime.datetime.now().isoformat(),
+        "task": task,
+        "tokens": token_count
+    })
+    save_token_log(log_data)
 
 # === Utility Functions ===
 def extract_text(path):
@@ -190,6 +212,8 @@ def synthesize_chunks(chunks, voice_name, language_code, speaking_rate, pitch, u
         plain_text = re.sub(r"<[^>]+>", "", chunk)
         if not plain_text.strip():
             continue
+
+        log_tts_tokens("Narration", [plain_text])  # ✅ log tokens here
         input_text = texttospeech.SynthesisInput(text=plain_text)
         voice = texttospeech.VoiceSelectionParams(language_code=language_code, name=voice_name)
         config = {"audio_encoding": texttospeech.AudioEncoding.MP3}
@@ -224,6 +248,8 @@ def generate_conversational_audio(script_lines, teacher_voice, student_voice, la
                 return
             voice_name = teacher_voice if current_speaker == "teacher" else student_voice
             plain_text = re.sub(r"<[^>]+>", "", combined_text)
+            log_tts_tokens(current_speaker.capitalize(), [plain_text])  #logs
+            
             input_text = texttospeech.SynthesisInput(text=plain_text)
             voice = texttospeech.VoiceSelectionParams(language_code=language_code, name=voice_name)
             config = {"audio_encoding": texttospeech.AudioEncoding.MP3}
@@ -259,7 +285,10 @@ def generate_conversational_audio(script_lines, teacher_voice, student_voice, la
     return None
 def log_tts_tokens(label, chunks):
     for chunk in chunks:
-        token_logs.append((f"TTS: {label}", len(chunk.split())))
+        token_count = len(chunk.split())
+        token_logs.append((f"TTS: {label}", token_count))
+        append_token_log(f"TTS: {label}", token_count)
+
 
 def generate_audio(script, voice_name, language_code, speaking_rate, pitch, use_rate, use_pitch):
     if conversation_mode:
@@ -377,9 +406,13 @@ if "edited_script" in st.session_state and st.button("🔊 Generate Audiobook"):
             st.error("❌ Audio generation failed.")
 
 with st.expander("📊 View Token Usage Logs"):
-    if token_logs:
-        for label, count in token_logs:
-            st.markdown(f"**{label}**: {count} tokens")
+    log_data = load_token_log()
+    if log_data:
+        total_tokens = sum(entry["tokens"] for entry in log_data)
+        st.markdown(f"**Cumulative Total Tokens:** `{total_tokens}`")
+
+        for entry in reversed(log_data[-50:]):  # show latest 50
+            st.markdown(f"- `{entry['timestamp']}` | **{entry['task']}**: {entry['tokens']} tokens")
     else:
         st.info("No token logs yet.")
 
