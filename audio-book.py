@@ -20,7 +20,8 @@ from google.oauth2 import service_account
 logo_url = "https://nostmbdijzudpxxqmcxc.supabase.co/storage/v1/object/public/profile//logo.png"
 
 # === Google Cloud Config ===
-gcp_credentials = json.loads(st.secrets["gcp_service_account"])
+#gcp_credentials = json.loads(st.secrets["gcp_service_account"])
+gcp_credentials = st.secrets["gcp_service_account"]
 credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
 project_id = gcp_credentials["project_id"]
 location = "us-central1"
