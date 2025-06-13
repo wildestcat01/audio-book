@@ -119,8 +119,10 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         ✅ Easy examples aur short sentences use kijiye
        
         - Make it sound natural like we speak in India and like teacher
+        - give small pauses like a natural teacher
         - Focus more of indian pronounciation style
-        - Avoid unsupported SSML tags and do not use '*' in the script.
+        - Avoid unsupported SSML tags
+        - do not use '*' in the script.
 
         Content:
         {raw_text}
@@ -131,7 +133,9 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
 
         - Make it sound natural like we speak in India and like teacher
         - Focus more of indian pronounciation style
-        - Avoid unsupported SSML tags and do not use '*' in the script.
+        - Avoid unsupported SSML tags
+        - do not use '*' in the script.
+        
 
         Content:
         {raw_text}
@@ -162,7 +166,8 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
 
         - Make it sound natural like we speak in India and like teacher
         - Focus more of indian pronounciation style
-        - Avoid unsupported SSML tags and do not use '*' in the script.
+        - Avoid unsupported SSML tags
+        - do not use '*' in the script.
 
         Content:
         {raw_text}
@@ -182,7 +187,8 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
 
         - Make it sound natural like we speak in India and like teacher
         - Focus more of indian pronounciation style
-        - Avoid unsupported SSML tags and do not use '*' in the script.
+        - Avoid unsupported SSML tags
+        - do not use '*' in the script.
 
         Content:
         {raw_text}
