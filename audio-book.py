@@ -117,12 +117,12 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         ✅ Jargon avoid kijiye, lekin technical terms English mein rakhiye
         ✅ Tone bilkul friendly aur classroom jaise ho
         ✅ Easy examples aur short sentences use kijiye
-       
+        - The tone should be natural and clear for students.
         - Make it sound natural like we speak in India and like teacher
         - give small pauses like a natural teacher
         - Focus more of indian pronounciation style
-        - Avoid unsupported SSML tags
-        - do not use '*' in the script.
+        - Do not use any special characters like asterisks *, markdown formatting, or emojis.
+        - Just plain text that sounds like natural speech.
 
         Content:
         {raw_text}
@@ -133,8 +133,12 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
 
         - Make it sound natural like we speak in India and like teacher
         - Focus more of indian pronounciation style
-        - Avoid unsupported SSML tags
-        - do not use '*' in the script.
+        - The tone should be natural and clear for students.
+        - Make it sound natural like we speak in India and like teacher
+        - give small pauses like a natural teacher
+        - Focus more of indian pronounciation style
+        - Do not use any special characters like asterisks *, markdown formatting, or emojis.
+        - Just plain text that sounds like natural speech.
         
 
         Content:
@@ -166,8 +170,12 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
 
         - Make it sound natural like we speak in India and like teacher
         - Focus more of indian pronounciation style
-        - Avoid unsupported SSML tags
-        - do not use '*' in the script.
+        - The tone should be natural and clear for students.
+        - Make it sound natural like we speak in India and like teacher
+        - give small pauses like a natural teacher
+        - Focus more of indian pronounciation style
+        - Do not use any special characters like asterisks *, markdown formatting, or emojis.
+        - Just plain text that sounds like natural speech.
 
         Content:
         {raw_text}
@@ -187,8 +195,12 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
 
         - Make it sound natural like we speak in India and like teacher
         - Focus more of indian pronounciation style
-        - Avoid unsupported SSML tags
-        - do not use '*' in the script.
+        - The tone should be natural and clear for students.
+        - Make it sound natural like we speak in India and like teacher
+        - give small pauses like a natural teacher
+        - Focus more of indian pronounciation style
+        - Do not use any special characters like asterisks *, markdown formatting, or emojis.
+        - Just plain text that sounds like natural speech.
 
         Content:
         {raw_text}
