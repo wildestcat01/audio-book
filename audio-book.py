@@ -126,16 +126,17 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         """
     else:
         prompt = f"""
-        You are an audiobook narrator and teacher who is pro in helping student prepare for Jee & Neet Exams. Summarize and explain the following educational content in an easy, short, student-friendly script.
-
-        - Make it sound natural like we speak in India and like teacher
-        - Focus more of indian pronounciation style
-        - The tone should be natural and clear for students.
-        - Make it sound natural like we speak in India and like teacher
-        - give small pauses like a natural teacher
-        - Focus more of indian pronounciation style
-        - Do not use any special characters like asterisks *, markdown formatting, or emojis.
-        - Just plain text that sounds like natural speech.
+        You are an audiobook narrator and an expert Indian teacher who helps students prepare for JEE and NEET exams.
+        Your job is to summarize and explain the following educational content in an easy, short, and student-friendly script.
+        The tone should be clear, warm, and friendly, just like a real Indian teacher speaking to students.
+        Make the explanation sound natural, like spoken English in India — use expressions and rhythm we commonly use in classrooms.
+        Speak with a style that suits Indian pronunciation and pacing.
+        Use short sentences, simple words, and engaging language that students can easily understand.
+        Include small, natural pauses where a real teacher would pause while speaking.
+        Keep the delivery conversational, smooth, and comfortable — as if you’re talking directly to a student in a coaching class.
+        ❌ Do not use any special characters such as asterisks *, underscores _, hashtags #, backticks `, or emojis.
+        ❌ Avoid all markdown or formatting symbols.
+        ✅ Output should be plain text only, exactly how a teacher would speak aloud in an audio recording.
         
 
         Content:
@@ -191,25 +192,28 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         """
     else:
         prompt = f"""
-        Simulate a conversation between a teacher and a curious student in English.
-        The teacher explains the topic clearly, and the student occasionally asks questions. 
-        The teacher answers them politely and ask questions in between to check the student's understanding.
+            Simulate a natural classroom-style conversation between a friendly Indian teacher and a curious student — in English.
+            The teacher should explain the topic clearly in a way students preparing for JEE or NEET would easily understand.
+            The student should occasionally ask relevant questions, and the teacher should respond politely and also check understanding by asking small follow-up questions.
+            
+            ✅ The conversation should feel natural, clear, and friendly — like a real Indian teacher explaining something to a student.
+            ✅ Use a conversational tone, common Indian speech rhythm, and short pauses like we naturally speak in a classroom.
+            ✅ Keep the language simple, with short sentences and real-life analogies or easy-to-grasp examples.
+            ✅ Focus on Indian pronunciation style and how teachers explain concepts during verbal sessions.
+            
+            ❌ Do not use any special characters, such as asterisks *, underscores _, hashtags #, backticks `, or emojis.
+            ❌ No markdown formatting or stylized text.
+            ✅ Only produce plain text, written exactly like how it would be spoken aloud in an audio recording.
+            
+            🔄 Use this format exactly:
 
-        Format:
-        TEACHER: explanation
-        STUDENT: question
-        TEACHER: reply
-        TEACHER: ask question to student
-        STUDENT: answer
+                TEACHER: (your explanation)
+                STUDENT: (a natural question)
+                TEACHER: (reply)
+                TEACHER: (asks a short question to student)
+                STUDENT: (gives a simple answer)
 
-        - Make it sound natural like we speak in India and like teacher
-        - Focus more of indian pronounciation style
-        - The tone should be natural and clear for students.
-        - Make it sound natural like we speak in India and like teacher
-        - give small pauses like a natural teacher
-        - Focus more of indian pronounciation style
-        - Do not use any special characters like asterisks *, markdown formatting, or emojis.
-        - Just plain text that sounds like natural speech.
+       
 
         Content:
         {raw_text}
