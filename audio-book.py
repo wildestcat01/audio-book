@@ -117,10 +117,10 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         ✅ Jargon avoid kijiye, lekin technical terms English mein rakhiye
         ✅ Tone bilkul friendly aur classroom jaise ho
         ✅ Easy examples aur short sentences use kijiye
-        ✅ Avoid unsupported SSML tags.
-        ✅ Use SSML tags if supported (<speak>, <break>, <prosody>, etc.) and do not use '*'
-        ✅ Voice narration ke liye suitable script likhiye
-        ✅ Make it sound natural and teacher-like
+       
+        - Make it sound natural like we speak in India and like teacher
+        - Focus more of indian pronounciation style
+        - Avoid unsupported SSML tags and do not use '*' in the script.
 
         Content:
         {raw_text}
@@ -129,9 +129,9 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         prompt = f"""
         You are an audiobook narrator and teacher who is pro in helping student prepare for Jee & Neet Exams. Summarize and explain the following educational content in an easy, short, student-friendly script.
 
-        ✅ Make it sound natural and teacher-like.
-        ✅ Use SSML tags if supported (<speak>, <break>, <prosody>, etc.)
-        ✅ Avoid unsupported SSML tags and do not use '*'
+        - Make it sound natural like we speak in India and like teacher
+        - Focus more of indian pronounciation style
+        - Avoid unsupported SSML tags and do not use '*' in the script.
 
         Content:
         {raw_text}
@@ -160,8 +160,9 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         TEACHER: ask question to student
         STUDENT: answer
 
-        ✅ Make it sound natural and teacher-like.
-        ✅ Avoid unsupported SSML tags and do not use '*' in the script.
+        - Make it sound natural like we speak in India and like teacher
+        - Focus more of indian pronounciation style
+        - Avoid unsupported SSML tags and do not use '*' in the script.
 
         Content:
         {raw_text}
@@ -179,8 +180,9 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         TEACHER: ask question to student
         STUDENT: answer
 
-        ✅ Make it sound natural and teacher-like.
-        ✅ Avoid unsupported SSML tags and do not use '*' in the script.
+        - Make it sound natural like we speak in India and like teacher
+        - Focus more of indian pronounciation style
+        - Avoid unsupported SSML tags and do not use '*' in the script.
 
         Content:
         {raw_text}
