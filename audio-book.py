@@ -154,16 +154,28 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         prompt = f"{prompt_override.strip()}\n\nContent:\n{raw_text}"
     elif language_mode == "hinglish":
         prompt = f"""
-        Simulate a conversation between a teacher and a curious student in Hinglish (mix of Hindi and English).
-        The teacher explains the topic clearly, and the student occasionally asks questions.
-        The teacher answers them politely and ask questions in between to check the student's understanding.
+        Simulate a natural conversation between a friendly Indian teacher and a curious student in Hinglish (mix of Hindi and English).
+        The teacher should explain the topic clearly, and the student should occasionally ask doubts in a natural way.
+        The teacher replies politely and also asks short questions in between to check the student’s understanding — jaise ek achha teacher karta hai.
+        
+        ✅ Tone should be very natural and classroom-like, just like how we talk in India.
+        ✅ Use short, simple sentences and clear examples.
+        ✅ Hindi aur English ka mix hona chahiye (Hinglish), but technical words English mein hi rakho.
+        ✅ Teacher ka bolne ka style Indian hona chahiye — jaise real classroom mein bolte hain.
+        ✅ Teacher thodi thodi pauses le — jaise naturally bolte time hota hai.
+        ✅ Student ke questions bhi genuine aur conversational lagne chahiye.
+        ✅ Keep the flow smooth, engaging, and real.
+        
+        ❌ Strictly avoid any special characters like asterisks *, underscores _, hashtags #, backticks `, or emojis.
+        ❌ No markdown formatting at all.
+        ✅ Just plain text, written exactly how it would be spoken out loud in a natural Indian conversation.
 
         Format:
         TEACHER: explanation
-        STUDENT: question
+        STUDENT: a natural question
         TEACHER: reply
-        TEACHER: ask question to student
-        STUDENT: answer
+        TEACHER: ask a short question to student
+        STUDENT: gives a simple answer
 
         - Make it sound natural like we speak in India and like teacher
         - Focus more of indian pronounciation style
