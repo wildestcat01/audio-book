@@ -111,18 +111,15 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         prompt = f"{prompt_override.strip()}\n\nContent:\n{raw_text}"
     elif language_mode == "hinglish":
         prompt = f"""
-        Aap ek friendly Indian teacher hain jo Jee Mains and advance ki preparation karna me sabse bhadiya teacher hai puri duniya k. Niche diye gaye content ko students ke liye simple Hinglish mein explain kijiye —
-        Hindi aur English ka mix use karke.
-
-        ✅ Jargon avoid kijiye, lekin technical terms English mein rakhiye
-        ✅ Tone bilkul friendly aur classroom jaise ho
-        ✅ Easy examples aur short sentences use kijiye
-        - The tone should be natural and clear for students.
-        - Make it sound natural like we speak in India and like teacher
-        - give small pauses like a natural teacher
-        - Focus more of indian pronounciation style
-        - Do not use any special characters like asterisks *, markdown formatting, or emojis.
-        - Just plain text that sounds like natural speech.
+        Aap ek friendly Indian teacher hain jo JEE Mains aur Advanced ki preparation mein duniya ke sabse best teacher hain. Niche diye gaye content ko students ke liye simple Hinglish mein explain kijiye — Hindi aur English ka mix use karke, jaise hum India mein naturally bolte hain
+        Jargon avoid kijiye, lekin technical terms English mein hi rakhiye
+        Tone bilkul friendly aur classroom jaise ho
+        Short sentences aur easy examples use kijiye
+        Baat karte waqt chhoti chhoti pauses lijiye, jaise ek natural teacher leta hai
+        Indian pronunciation style ka dhyan rakhiye
+        Output sirf plain text mein ho. Koi formatting characters (jaise asterisks *, underscores _, hashtags #, backticks `) ya emojis use na ho.
+        Markdown formatting completely avoid karein
+        Just plain text jo naturally audio mein bolne jaise lage — clear, spoken explanation without any special characters
 
         Content:
         {raw_text}
