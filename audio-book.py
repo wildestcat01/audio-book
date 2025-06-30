@@ -115,6 +115,7 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         Jargon avoid kijiye, lekin technical terms English mein hi rakhiye
         Tone bilkul friendly aur classroom jaise ho
         Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block, to ensure accurate pronunciation when read by Google Text-to-Speech
+        When generating the script, provide Hindi words in Romanized form (Hinglish) using phonetic spellings that closely match the intended pronunciation. Also wrap the full output in <speak>...</speak> tags to support future SSML tweaks.
         Short sentences aur easy examples use kijiye
         Baat karte waqt chhoti chhoti pauses lijiye, jaise ek natural teacher leta hai
         Indian pronunciation style ka dhyan rakhiye
@@ -167,7 +168,8 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         ✅ Teacher thodi thodi pauses le — jaise naturally bolte time hota hai.
         ✅ Student ke questions bhi genuine aur conversational lagne chahiye.
         ✅ Keep the flow smooth, engaging, and real.
-         - Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block, to ensure accurate pronunciation when read by Google Text-to-Speech
+        Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block, to ensure accurate pronunciation when read by Google Text-to-Speech
+        When generating the script, provide Hindi words in Romanized form (Hinglish) using phonetic spellings that closely match the intended pronunciation. Also wrap the full output in <speak>...</speak> tags to support future SSML tweaks.
         ❌ Strictly avoid any special characters like asterisks *, underscores _, hashtags #, backticks `, or emojis.
         ❌ No markdown formatting at all.
         ✅ Just plain text, written exactly how it would be spoken out loud in a natural Indian conversation.
