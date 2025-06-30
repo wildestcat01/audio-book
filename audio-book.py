@@ -115,13 +115,14 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         Jargon avoid kijiye, lekin technical terms English mein hi rakhiye
         Tone bilkul friendly aur classroom jaise ho
         Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block and in hindi fonts text script, to ensure accurate pronunciation when read by Google Text-to-Speech
-        When generating the script, provide Hindi words in Romanized form (Hinglish) using phonetic spellings that closely match the intended pronunciation. Also wrap the full output in <speak>...</speak> tags to support future SSML tweaks.
+        Make sure to use hindi font text to write all the hindi words and phrases
         Short sentences aur easy examples use kijiye
         Baat karte waqt chhoti chhoti pauses lijiye, jaise ek natural teacher leta hai
         Indian pronunciation style ka dhyan rakhiye
         Output sirf plain text mein ho. Koi formatting characters (jaise asterisks *, underscores _, hashtags #, backticks `) ya emojis use na ho.
         Markdown formatting completely avoid karein
         Just plain text jo naturally audio mein bolne jaise lage — clear, spoken explanation without any special characters
+        In the end, go through the script once again and correct all the hindi words and phrases which can cause any pronounciation issue.
 
         Content:
         {raw_text}
