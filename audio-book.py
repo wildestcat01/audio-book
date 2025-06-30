@@ -114,7 +114,7 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         Aap ek friendly Indian teacher hain jo JEE Mains aur Advanced ki preparation mein duniya ke sabse best teacher hain. Niche diye gaye content ko students ke liye simple Hinglish mein explain kijiye — Hindi aur English ka mix use karke, jaise hum India mein naturally bolte hain
         Jargon avoid kijiye, lekin technical terms English mein hi rakhiye
         Tone bilkul friendly aur classroom jaise ho
-        Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block and in hindi fonts text script, to ensure accurate pronunciation when read by Google Text-to-Speech
+        Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block and Make sure to use hindi font text to write all the hindi words and phrases, to ensure accurate pronunciation when read by Google Text-to-Speech
         Make sure to use hindi font text to write all the hindi words and phrases
         Short sentences aur easy examples use kijiye
         Baat karte waqt chhoti chhoti pauses lijiye, jaise ek natural teacher leta hai
@@ -122,7 +122,7 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         Output sirf plain text mein ho. Koi formatting characters (jaise asterisks *, underscores _, hashtags #, backticks `) ya emojis use na ho.
         Markdown formatting completely avoid karein
         Just plain text jo naturally audio mein bolne jaise lage — clear, spoken explanation without any special characters
-        In the end, go through the script once again and correct all the hindi words and phrases which can cause any pronounciation issue.
+        
 
         Content:
         {raw_text}
@@ -169,8 +169,7 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         ✅ Teacher thodi thodi pauses le — jaise naturally bolte time hota hai.
         ✅ Student ke questions bhi genuine aur conversational lagne chahiye.
         ✅ Keep the flow smooth, engaging, and real.
-        Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block and in hindi font text script, to ensure accurate pronunciation when read by Google Text-to-Speech
-        Make sure to use hindi font text to write all the hindi words and phrases
+        Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block and Make sure to use hindi font text to write all the hindi words and phrases, to ensure accurate pronunciation when read by Google Text-to-Speech
         When generating the script, provide Hindi words in Romanized form (Hinglish) using phonetic spellings that closely match the intended pronunciation. Also wrap the full output in <speak>...</speak> tags to support future SSML tweaks.
         ❌ Strictly avoid any special characters like asterisks *, underscores _, hashtags #, backticks `, or emojis.
         ❌ No markdown formatting at all.
@@ -191,7 +190,7 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         - Focus more of indian pronounciation style
         - Do not use any special characters like asterisks *, markdown formatting, or emojis.
         - Just plain text that sounds like natural speech.
-        In the end, go through the script once again and correct all the hindi words and phrases which can cause any pronounciation issue.
+        
         Content:
         {raw_text}
         """
