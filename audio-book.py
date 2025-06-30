@@ -169,6 +169,7 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         ✅ Teacher thodi thodi pauses le — jaise naturally bolte time hota hai.
         ✅ Student ke questions bhi genuine aur conversational lagne chahiye.
         ✅ Keep the flow smooth, engaging, and real.
+        Use hindi font text where hindi words are used
         Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block and Make sure to use hindi font text to write all the hindi words and phrases, to ensure accurate pronunciation when read by Google Text-to-Speech
         When generating the script, provide Hindi words in Romanized form (Hinglish) using phonetic spellings that closely match the intended pronunciation. Also wrap the full output in <speak>...</speak> tags to support future SSML tweaks.
         ❌ Strictly avoid any special characters like asterisks *, underscores _, hashtags #, backticks `, or emojis.
