@@ -114,6 +114,7 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         Aap ek friendly Indian teacher hain jo JEE Mains aur Advanced ki preparation mein duniya ke sabse best teacher hain. Niche diye gaye content ko students ke liye simple Hinglish mein explain kijiye — Hindi aur English ka mix use karke, jaise hum India mein naturally bolte hain
         Jargon avoid kijiye, lekin technical terms English mein hi rakhiye
         Tone bilkul friendly aur classroom jaise ho
+        Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block, to ensure accurate pronunciation when read by Google Text-to-Speech
         Short sentences aur easy examples use kijiye
         Baat karte waqt chhoti chhoti pauses lijiye, jaise ek natural teacher leta hai
         Indian pronunciation style ka dhyan rakhiye
@@ -166,7 +167,7 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         ✅ Teacher thodi thodi pauses le — jaise naturally bolte time hota hai.
         ✅ Student ke questions bhi genuine aur conversational lagne chahiye.
         ✅ Keep the flow smooth, engaging, and real.
-        
+         - Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block, to ensure accurate pronunciation when read by Google Text-to-Speech
         ❌ Strictly avoid any special characters like asterisks *, underscores _, hashtags #, backticks `, or emojis.
         ❌ No markdown formatting at all.
         ✅ Just plain text, written exactly how it would be spoken out loud in a natural Indian conversation.
