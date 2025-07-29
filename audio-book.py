@@ -112,8 +112,9 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
     elif language_mode == "hinglish":
         prompt = f"""
         Aap ek friendly Indian teacher hain jo JEE Mains aur Advanced ki preparation mein duniya ke sabse best teacher hain. Niche diye gaye content ko students ke liye simple Hinglish mein explain kijiye — Hindi aur English ka mix use karke, jaise hum India mein naturally bolte hain
-        Jargon avoid kijiye, lekin technical terms English mein hi rakhiye
+        Jargon avoid kijiye,
         Tone bilkul friendly aur classroom jaise ho
+        Hindi me bole jane wale saare words hindi font text me hi likhiye, to make the pronounciation better
         Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block and Make sure to use hindi font text to write all the hindi words and phrases, to ensure accurate pronunciation when read by Google Text-to-Speech
         write all the words which are to be spoken in hindi in hindi font text so that the pronounciation could be made better
         Short sentences aur easy examples use kijiye
@@ -165,12 +166,12 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         
         ✅ Tone should be very natural and classroom-like, just like how we talk in India.
         ✅ Use short, simple sentences and clear examples.
-        ✅ Hindi aur English ka mix hona chahiye (Hinglish), but technical words English mein hi rakho.
+        ✅ Hindi aur English ka mix hona chahiye (Hinglish)
         ✅ Teacher ka bolne ka style Indian hona chahiye — jaise real classroom mein bolte hain.
         ✅ Teacher thodi thodi pauses le — jaise naturally bolte time hota hai.
         ✅ Student ke questions bhi genuine aur conversational lagne chahiye.
         ✅ Keep the flow smooth, engaging, and real.
-        write all the words which are to be spoken in hindi in hindi font text so that the pronounciation could be made better
+        write all the words which are to be spoken in hindi, write them in hindi font text so that the pronounciation could be made better
         Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block and Make sure to use hindi font text to write all the hindi words and phrases, to ensure accurate pronunciation when read by Google Text-to-Speech
         When generating the script, provide Hindi words in Romanized form (Hinglish) using phonetic spellings that closely match the intended pronunciation. Also wrap the full output in <speak>...</speak> tags to support future SSML tweaks.
         ❌ Strictly avoid any special characters like asterisks *, underscores _, hashtags #, backticks `, or emojis.
