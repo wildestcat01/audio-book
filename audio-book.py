@@ -99,7 +99,7 @@ def clean_text(text):
     return text.strip()
 
 def sanitize_ssml(text):
-    text = html.unescape(text.replace("&", "&"))
+    text = html.unescape(text.replace("&", "&amp;"))
     text = re.sub(r'<(\w+)(\s[^>]*)?>', r'<\1>', text)
     if not text.strip().startswith("<speak>"):
         text = f"<speak>{text}</speak>"
