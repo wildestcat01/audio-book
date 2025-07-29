@@ -106,7 +106,7 @@ def sanitize_ssml(text):
     return text
 
 def generate_teaching_script(raw_text, language_mode, prompt_override):
-    model = GenerativeModel("gemini-2.5-pro-preview-05-06")
+    model = GenerativeModel("gemini-2.5-pro")
     if prompt_override:
         prompt = f"{prompt_override.strip()}\n\nContent:\n{raw_text}"
     elif language_mode == "hinglish":
