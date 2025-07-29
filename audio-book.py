@@ -1,5 +1,5 @@
 # Author: Bilal Saifi
-# Version: 7.2 - Streamlit Cloud Compatible with Optional Conversation Mode and Dynamic Voice Field Visibility
+# Version: 8.0 - Added Separate Pitch/Rate Controls for Teacher & Student
 # To execute: streamlit run audio-book.py
 
 import os
@@ -99,7 +99,7 @@ def clean_text(text):
     return text.strip()
 
 def sanitize_ssml(text):
-    text = html.unescape(text.replace("&", "&amp;"))
+    text = html.unescape(text.replace("&", "&"))
     text = re.sub(r'<(\w+)(\s[^>]*)?>', r'<\1>', text)
     if not text.strip().startswith("<speak>"):
         text = f"<speak>{text}</speak>"
@@ -147,6 +147,7 @@ def generate_teaching_script(raw_text, language_mode, prompt_override):
         """
     try:
         response = model.generate_content(prompt)
+        log_tokens("Gemini: Teaching Script", response.text)
         return response.text.strip()
     except Exception as e:
         st.error(f"Gemini Error: {e}")
@@ -225,6 +226,7 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         """
     try:
         response = model.generate_content(prompt)
+        log_tokens("Gemini: Conversation Script", response.text)
         return response.text.strip()
     except Exception as e:
         st.error(f"Gemini Error: {e}")
@@ -244,6 +246,12 @@ def split_by_bytes(text, max_bytes=4400):
         parts.append(current.strip())
     return parts
 
+def log_tts_tokens(label, chunks):
+    for chunk in chunks:
+        token_count = len(chunk.split())
+        token_logs.append((f"TTS: {label}", token_count))
+        append_token_log(f"TTS: {label}", token_count)
+
 def synthesize_chunks(chunks, voice_name, language_code, speaking_rate, pitch, use_rate, use_pitch):
     client = texttospeech.TextToSpeechClient(credentials=credentials)
     audio_chunks = []
@@ -252,7 +260,7 @@ def synthesize_chunks(chunks, voice_name, language_code, speaking_rate, pitch, u
         if not plain_text.strip():
             continue
 
-        log_tts_tokens("Narration", [plain_text])  # ✅ log tokens here
+        log_tts_tokens("Narration", [plain_text])
         input_text = texttospeech.SynthesisInput(text=plain_text)
         voice = texttospeech.VoiceSelectionParams(language_code=language_code, name=voice_name)
         config = {"audio_encoding": texttospeech.AudioEncoding.MP3}
@@ -272,7 +280,11 @@ def synthesize_chunks(chunks, voice_name, language_code, speaking_rate, pitch, u
         return temp_mp3.name
     return None
 
-def generate_conversational_audio(script_lines, teacher_voice, student_voice, language_code, speaking_rate, pitch, max_bytes, use_rate, use_pitch):
+# --- UPDATED FUNCTION ---
+# This function now accepts separate rate/pitch settings for teacher and student.
+def generate_conversational_audio(script_lines, teacher_voice, student_voice, language_code, 
+                                  teacher_rate, teacher_pitch, use_teacher_rate, use_teacher_pitch,
+                                  student_rate, student_pitch, use_student_rate, use_student_pitch):
     client = texttospeech.TextToSpeechClient(credentials=credentials)
     audio_chunks = []
     current_speaker = None
@@ -285,16 +297,27 @@ def generate_conversational_audio(script_lines, teacher_voice, student_voice, la
             if not combined_text:
                 buffer = []
                 return
+            
             voice_name = teacher_voice if current_speaker == "teacher" else student_voice
             plain_text = re.sub(r"<[^>]+>", "", combined_text)
-            log_tts_tokens(current_speaker.capitalize(), [plain_text])  #logs
+            log_tts_tokens(current_speaker.capitalize(), [plain_text])
             
             input_text = texttospeech.SynthesisInput(text=plain_text)
             voice = texttospeech.VoiceSelectionParams(language_code=language_code, name=voice_name)
+            
+            # --- CORE LOGIC CHANGE ---
+            # Dynamically set pitch and rate based on the current speaker.
             config = {"audio_encoding": texttospeech.AudioEncoding.MP3}
-            if use_rate: config["speaking_rate"] = speaking_rate
-            if use_pitch: config["pitch"] = pitch
+            if current_speaker == "teacher":
+                if use_teacher_rate: config["speaking_rate"] = teacher_rate
+                if use_teacher_pitch: config["pitch"] = teacher_pitch
+            elif current_speaker == "student":
+                if use_student_rate: config["speaking_rate"] = student_rate
+                if use_student_pitch: config["pitch"] = student_pitch
+            
             audio_config = texttospeech.AudioConfig(**config)
+            # --- END OF CORE LOGIC CHANGE ---
+            
             try:
                 response = client.synthesize_speech(input=input_text, voice=voice, audio_config=audio_config)
                 audio_chunks.append(response.audio_content)
@@ -311,51 +334,16 @@ def generate_conversational_audio(script_lines, teacher_voice, student_voice, la
             flush()
             current_speaker = match.group(1).lower()
             buffer = [match.group(2).strip()]
-        else:
+        elif buffer: # Append to existing speaker's buffer if it's a continuation line
             buffer.append(line)
-    flush()
+    flush() # Flush the last speaker's buffer
 
     if audio_chunks:
-        temp_mp3 = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
-        with open(temp_mp3.name, "wb") as f:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_mp3:
             for chunk in audio_chunks:
-                f.write(chunk)
-        return temp_mp3.name
+                temp_mp3.write(chunk)
+            return temp_mp3.name
     return None
-def log_tts_tokens(label, chunks):
-    for chunk in chunks:
-        token_count = len(chunk.split())
-        token_logs.append((f"TTS: {label}", token_count))
-        append_token_log(f"TTS: {label}", token_count)
-
-
-def generate_audio(script, voice_name, language_code, speaking_rate, pitch, use_rate, use_pitch):
-    if conversation_mode:
-        script_lines = script.splitlines()
-        return generate_conversational_audio(
-            script_lines,
-            teacher_voice,
-            student_voice,
-            language_code,
-            speaking_rate,
-            pitch,
-            max_bytes,
-            use_rate,
-            use_pitch
-        )
-    else:
-        chunks = split_by_bytes(script, max_bytes=max_bytes)
-        log_tts_tokens("chunks", chunks)
-        return synthesize_chunks(
-            chunks,
-            voice_name,
-            language_code,
-            speaking_rate,
-            pitch,
-            use_rate,
-            use_pitch
-        )
-
 
 # === Streamlit UI ===
 st.set_page_config(page_title="AI Audiobook Generator", layout="wide")
@@ -387,18 +375,36 @@ with col1:
     else:
         voice_name = st.text_input("🎙️ TTS Voice Name", "en-US-Casual-K")
 
-    ("🎙️ Available voices: https://cloud.google.com/text-to-speech/docs/list-voices-and-types")
-    ("Default teacher: en-US-Casual-K for English and  hi-IN-Chirp3-HD-Achird ")
-    ("Default Student: sen-US-Standard-F for English and hi-IN-Chirp3-HD-Leda ")
+    st.info("Available voices: [Google Cloud TTS Docs](https://cloud.google.com/text-to-speech/docs/voices)")
+    st.caption("Defaults (English): Teacher `en-US-Casual-K`, Student `en-US-Standard-F`")
+    st.caption("Defaults (Hinglish): Teacher `hi-IN-Neural2-C`, Student `hi-IN-Neural2-A`")
 
+# --- UPDATED UI SECTION ---
+# The UI now conditionally shows controls based on conversation_mode.
 with col2:
-    speaking_rate = st.slider("🚀 Speaking Rate", 0.5, 2.0, 0.95)
-    use_rate = st.checkbox("🗣️ Apply Speaking Rate", value=True)
-    pitch = st.slider("🎚️ Pitch", -20.0, 20.0, -2.0)
-    use_pitch = st.checkbox("🎵 Apply Pitch", value=True)
-    max_bytes = st.slider("🧩 Max Bytes per Chunk", 1000, 6000, 4400)
+    if conversation_mode:
+        st.subheader("👨‍🏫 Teacher Voice Settings")
+        teacher_rate = st.slider("🚀 Teacher Speaking Rate", 0.5, 2.0, 0.95, key="teacher_rate")
+        use_teacher_rate = st.checkbox("Apply Teacher Rate", value=True, key="use_teacher_rate")
+        teacher_pitch = st.slider("🎚️ Teacher Pitch", -20.0, 20.0, -2.0, key="teacher_pitch")
+        use_teacher_pitch = st.checkbox("Apply Teacher Pitch", value=True, key="use_teacher_pitch")
 
-prompt_override = st.text_area("✍️ Optional: Override Gemini Prompt (use {content})", "", height=150)
+        st.subheader("🧑‍🎓 Student Voice Settings")
+        student_rate = st.slider("🚀 Student Speaking Rate", 0.5, 2.0, 1.05, key="student_rate")
+        use_student_rate = st.checkbox("Apply Student Rate", value=True, key="use_student_rate")
+        student_pitch = st.slider("🎚️ Student Pitch", -20.0, 20.0, 0.0, key="student_pitch")
+        use_student_pitch = st.checkbox("Apply Student Pitch", value=True, key="use_student_pitch")
+    else:
+        st.subheader("🎙️ Voice Settings")
+        speaking_rate = st.slider("🚀 Speaking Rate", 0.5, 2.0, 0.95)
+        use_rate = st.checkbox("🗣️ Apply Speaking Rate", value=True)
+        pitch = st.slider("🎚️ Pitch", -20.0, 20.0, -2.0)
+        use_pitch = st.checkbox("🎵 Apply Pitch", value=True)
+    
+    st.subheader("⚙️ Technical Settings")
+    max_bytes = st.slider("🧩 Max Bytes per Chunk (for single narrator mode)", 1000, 6000, 4400)
+
+prompt_override = st.text_area("✍️ Optional: Override Gemini Prompt (use {raw_text} to include content)", "", height=150)
 
 if uploaded_file and st.button("🧠 Generate Teaching Script"):
     suffix = uploaded_file.name.split(".")[-1]
@@ -412,35 +418,68 @@ if uploaded_file and st.button("🧠 Generate Teaching Script"):
             st.error("❌ No text extracted.")
         else:
             cleaned = clean_text(raw_text)
+            st.session_state.raw_text_for_prompt = cleaned # Store for optional override
+            
+            # Prepare the prompt based on override
+            prompt_to_use = prompt_override.format(raw_text=cleaned) if prompt_override else ""
+
             if conversation_mode:
-                script = generate_conversation_script(cleaned, language_mode, prompt_override)
+                script = generate_conversation_script(cleaned, language_mode, prompt_to_use)
             else:
-                script = generate_teaching_script(cleaned, language_mode, prompt_override)
+                script = generate_teaching_script(cleaned, language_mode, prompt_to_use)
+                
             if not script:
                 st.error("❌ Script generation failed.")
             else:
                 st.session_state.generated_script = script
                 st.success("✅ Script generated successfully!")
+    
+    os.remove(tmp_path)
+
 
 if "generated_script" in st.session_state:
     edited_script = st.text_area("📄 Edit Script (before audio)", st.session_state.generated_script, height=350)
     st.session_state.edited_script = edited_script
 
+# --- UPDATED AUDIO GENERATION LOGIC ---
+# Removed the `generate_audio` wrapper and call specific functions directly.
 if "edited_script" in st.session_state and st.button("🔊 Generate Audiobook"):
-    with st.spinner("🎧 Synthesizing audio..."):
-        audio_path = generate_audio(
-            st.session_state.edited_script,
-            teacher_voice if conversation_mode else voice_name,
-            language_code,
-            speaking_rate,
-            pitch,
-            use_rate,
-            use_pitch
-        )
+    with st.spinner("🎧 Synthesizing audio... This may take a moment."):
+        script = st.session_state.edited_script
+        audio_path = None 
+        
+        if conversation_mode:
+            audio_path = generate_conversational_audio(
+                script_lines=script.splitlines(),
+                teacher_voice=teacher_voice,
+                student_voice=student_voice,
+                language_code=language_code,
+                teacher_rate=teacher_rate,
+                teacher_pitch=teacher_pitch,
+                use_teacher_rate=use_teacher_rate,
+                use_teacher_pitch=use_teacher_pitch,
+                student_rate=student_rate,
+                student_pitch=student_pitch,
+                use_student_rate=use_student_rate,
+                use_student_pitch=use_student_pitch
+            )
+        else: # Standard mode
+            chunks = split_by_bytes(script, max_bytes=max_bytes)
+            audio_path = synthesize_chunks(
+                chunks=chunks,
+                voice_name=voice_name,
+                language_code=language_code,
+                speaking_rate=speaking_rate,
+                pitch=pitch,
+                use_rate=use_rate,
+                use_pitch=use_pitch
+            )
+
         if audio_path:
             with open(audio_path, "rb") as f:
                 st.audio(f.read(), format="audio/mp3")
                 st.download_button("⬇️ Download Audiobook", f, file_name="audiobook.mp3")
+            os.remove(audio_path)
         else:
             st.error("❌ Audio generation failed.")
 
@@ -450,7 +489,10 @@ with st.expander("📊 View Token Usage Logs"):
         total_tokens = sum(entry["tokens"] for entry in log_data)
         st.markdown(f"**Cumulative Total Tokens:** `{total_tokens}`")
 
-        for entry in reversed(log_data[-50:]):  # show latest 50
+        # Display latest 50 logs
+        st.write("---")
+        st.write("**Latest 50 Entries:**")
+        for entry in reversed(log_data[-50:]):
             st.markdown(f"- `{entry['timestamp']}` | **{entry['task']}**: {entry['tokens']} tokens")
     else:
         st.info("No token logs yet.")
