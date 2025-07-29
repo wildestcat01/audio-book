@@ -166,14 +166,13 @@ def generate_conversation_script(raw_text, language_mode, prompt_override):
         
         ✅ Tone should be very natural and classroom-like, just like how we talk in India.
         ✅ Use short, simple sentences and clear examples.
-        ✅ Hindi aur English ka mix hona chahiye (Hinglish)
+        ✅ Hindi aur English ka mix hona chahiye.
         ✅ Teacher ka bolne ka style Indian hona chahiye — jaise real classroom mein bolte hain.
         ✅ Teacher thodi thodi pauses le — jaise naturally bolte time hota hai.
         ✅ Student ke questions bhi genuine aur conversational lagne chahiye.
         ✅ Keep the flow smooth, engaging, and real.
         write all the words which are to be spoken in hindi, write them in hindi font text so that the pronounciation could be made better
         Wrap Hindi words or phrases in the script using <lang xml:lang="hi-IN">...</lang> inside a <speak> block and Make sure to use hindi font text to write all the hindi words and phrases, to ensure accurate pronunciation when read by Google Text-to-Speech
-        When generating the script, provide Hindi words in Romanized form (Hinglish) using phonetic spellings that closely match the intended pronunciation. Also wrap the full output in <speak>...</speak> tags to support future SSML tweaks.
         ❌ Strictly avoid any special characters like asterisks *, underscores _, hashtags #, backticks `, or emojis.
         ❌ No markdown formatting at all.
         ✅ Just plain text, written exactly how it would be spoken out loud in a natural Indian conversation.
